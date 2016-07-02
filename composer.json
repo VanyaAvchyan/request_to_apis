@@ -1,0 +1,5 @@
+{
+    "require": {
+        "aws/aws-sdk-php-zf2": "1.2.1"
+    }
+}
