@@ -14,22 +14,36 @@ function dp($data, $type = true){
 
 class AmazonApiMonitoring
 {
+    /**
+     * @var array $config array for configurations
+     */
     private $config =[];
+    /**
+     * @var array $message contains  error messages 
+     */
     private $message = [];
 
     /**
-     * AmazonApiMonitoring constructor.
+     * Initialaizing custom properties
+     * 
+     * @return void
      */
     public function __construct()
     {
         $this->config = include_once __DIR__ . "/../config/config.php";
 
-        //dp($factoryData);
-
     }
 
     /**
-     * function run
+     * This method is main which run index.php 
+     * Creating amazon instances with CURL 
+     * Get speed with CURL 
+     * Getting instances with CURL 
+     * Getting speed by location id
+     * Getting speed Details
+     * If one method returns code = 0 Sending Message to Email with notice
+     * 
+     * @return void
      */
     public function run()
     {
@@ -74,7 +88,8 @@ class AmazonApiMonitoring
     }
 
     /**
-     * function getUrl
+     * Sending CURL to create instances
+     * 
      * @return array
      */
     private function createInstance()
@@ -93,7 +108,8 @@ class AmazonApiMonitoring
         return (array)json_decode($server_output);
     }
     /**
-     * function getUrl
+     * Sending CURL to check speed
+     * 
      * @return array
      */
     private function getSpeed()
@@ -114,7 +130,8 @@ class AmazonApiMonitoring
     }
 
     /**
-     * function getUrl
+     * Sending CURL to get instance
+     * 
      * @return array
      */
     private function getInstance()
@@ -134,7 +151,9 @@ class AmazonApiMonitoring
         return (array)json_decode($server_output);
     }
     /**
-     * function getUrl
+     * Sending CURL to get speed by location
+     * 
+     * @param sting $neuStarId
      * @return array
      */
     private function getSpeedByLocation($neuStarId)
@@ -154,7 +173,9 @@ class AmazonApiMonitoring
         return (array)json_decode($server_output);
     }
     /**
-     * function getUrl
+     * Sending CURL to get speed details
+     *
+     * @param array $speedData
      * @return array
      */
     private function getSpeedDetails($speedData)
