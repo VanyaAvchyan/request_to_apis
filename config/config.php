@@ -22,6 +22,7 @@ return [
     'validation_error'      => 'actionn get not a valid response',
     'wrong_code'            => 'Something wet wrong. Code is changed on the original site.',
     'wrong_duration'        => 'Get Speed By Location limit is reached. Attempts have been made ',
+    'incorrect_url'         => 'does not respond to a request. Hader code ',
     'live_actions'          => [
         'getUrl'             => 'http://deploy.aiscaler.com/geturl',
         'createInstance'      => 'http://deploy.aiscaler.com/createinstance',

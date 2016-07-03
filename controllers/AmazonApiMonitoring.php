@@ -106,18 +106,8 @@ class AmazonApiMonitoring
     private function getUrl()
     {
         $postFields  = 'url='.$this->config['url'];
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $this->config['live_actions']['getUrl']);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $server_output = curl_exec ($ch);
-
-        curl_close ($ch);
-        return $this->isValidResponse($server_output, 'getUrl');
+        $curl_out = $this->curlPostRequst( $this->config['live_actions']['getUrl'], $postFields);
+        return $this->isValidResponse($curl_out, __FUNCTION__);
     }
 
     /**
@@ -131,18 +121,8 @@ class AmazonApiMonitoring
         $postFields .= 'init_url='.$this->config['init_url'].'&';
         $postFields .= 'url='.$this->config['domain'].'&';
         $postFields .= 'create_config_file='.$this->config['create_config_file'];
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $this->config['live_actions']['createInstance']);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $server_output = curl_exec ($ch);
-
-        curl_close ($ch);
-        return $this->isValidResponse($server_output, 'createInstance');
+        $curl_out = $this->curlPostRequst($this->config['live_actions']['createInstance'], $postFields);
+        return $this->isValidResponse($curl_out, __FUNCTION__);
     }
 
     /**
@@ -157,19 +137,8 @@ class AmazonApiMonitoring
         $postFields .= 'init_url='.$this->config['init_url'].'&';
         $postFields .= 'url='.$this->config['domain'].'&';
         $postFields .= 'public_dns=';
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $this->config['live_actions']['getSpeed']);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $server_output = curl_exec ($ch);
-
-        curl_close ($ch);
-
-        return $this->isValidResponse($server_output,'getSpeed');
+        $curl_out    = $this->curlPostRequst($this->config['live_actions']['getSpeed'], $postFields);
+        return $this->isValidResponse($curl_out,__FUNCTION__);
     }
 
     /**
@@ -179,25 +148,15 @@ class AmazonApiMonitoring
      */
     private function getInstance($instanceId)
     {
-        $postField  = 'region_code='.   $this->config['region_code'].'&';
-        $postField .= 'instanceId='.    $instanceId.'&';
-        $postField .= 'init_url='.      $this->config['init_url'].'&';
-        $postField .= 'url='.           $this->config['domain'].'&';
-        $postField .= 'protocol='.      $this->config['protocol'].'&';
-        $postField .= 'instance_count='.$this->config['instance_count'];
-        $ch = curl_init();
+        $postFields  = 'region_code='.   $this->config['region_code'].'&';
+        $postFields .= 'instanceId='.    $instanceId.'&';
+        $postFields .= 'init_url='.      $this->config['init_url'].'&';
+        $postFields .= 'url='.           $this->config['domain'].'&';
+        $postFields .= 'protocol='.      $this->config['protocol'].'&';
+        $postFields .= 'instance_count='.$this->config['instance_count'];
+        $curl_out   = $this->curlPostRequst($this->config['live_actions']['getInstance'], $postFields);
 
-        curl_setopt($ch, CURLOPT_URL, $this->config['live_actions']['getInstance']);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postField);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $server_output = curl_exec ($ch);
-
-        curl_close ($ch);
-
-        return $this->isValidResponse($server_output,'getInstance');
+        return $this->isValidResponse($curl_out,__FUNCTION__);
     }
 
     /**
@@ -211,14 +170,9 @@ class AmazonApiMonitoring
         $cnt = 0;
         while ($neuStarId && $cnt < $this->config['duration']){
             $cnt++;
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $this->config['live_actions']['getSpeedByLocation']);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, "neustar_id=".$neuStarId);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $server_output = curl_exec ($ch);
-            curl_close ($ch);
-            $validRequst = $this->isValidResponse($server_output,'getSpeedByLocation');
+            $postFields .= "neustar_id=".$neuStarId;
+            $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
+            $validRequst = $this->isValidResponse($curl_out,__FUNCTION__);
             if($validRequst['code'])
             {
                 $valid_sped = $this->config['valid_speed'];
@@ -251,22 +205,16 @@ class AmazonApiMonitoring
      */
     private function getSpeedDetails($speedData)
     {
-        $postField  = 'url='.                           $this->config['domain'].'&';
-        $postField .= 'region_code='.                   $this->config['region_code'].'&';
-        $postField .= 'location='.                      $this->config['location'].'&';
-        $postField .= 'speed_origine='.                 $speedData['speed_origine'].'&';
-        $postField .= 'speed='.                         $speedData['speed'].'&';
-        $postField .= 'neustar_location_id='.           $speedData['neustar_location_id'].'&';
-        $postField .= 'neustar_location_id_origine='.   $speedData['neustar_location_id_origine'];
+        $postFields  = 'url='.                           $this->config['domain'].'&';
+        $postFields .= 'region_code='.                   $this->config['region_code'].'&';
+        $postFields .= 'location='.                      $this->config['location'].'&';
+        $postFields .= 'speed_origine='.                 $speedData['speed_origine'].'&';
+        $postFields .= 'speed='.                         $speedData['speed'].'&';
+        $postFields .= 'neustar_location_id='.           $speedData['neustar_location_id'].'&';
+        $postFields .= 'neustar_location_id_origine='.   $speedData['neustar_location_id_origine'];
         
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->config['live_actions']['getSpeedDetails']);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postField);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $server_output = curl_exec ($ch);
-        curl_close ($ch);
-        return $this->isValidResponse($server_output);
+        $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedDetails'], $postFields);
+        return $this->isValidResponse($curl_out,__FUNCTION__);
     }
     
     /**
@@ -309,5 +257,32 @@ class AmazonApiMonitoring
             'code'    => 0,
             'message' => $type.' '.$this->config['validation_error']
         ];
+    }
+    /**
+     * Validation response data
+     * 
+     * @param string $response
+     * @return array|boolean
+     */
+    private function curlPostRequst( $url, $postFields )
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $server_output = curl_exec ($ch);
+        $info = curl_getinfo($ch);
+        curl_close ($ch);
+        
+        if($info['http_code'] && $info['http_code']  >= 400 ){
+            return [
+                'code'    => 0,
+                'message' => $url. $this->config['incorrect_url'].$info['http_code']
+            ];
+        }
+        return $server_output;
     }
 }
