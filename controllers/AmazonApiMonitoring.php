@@ -61,9 +61,9 @@ class AmazonApiMonitoring
         {
             $this->message[] = $speed['message'];
         }
-        dp($speed);
 
-        $getInst = $this->getInstance();
+        $getInst = $this->getInstance($instance['instanceId']);
+        
         if(!$getInst['code'])
         {
             $this->message[] = $getInst['message'];
@@ -74,7 +74,8 @@ class AmazonApiMonitoring
             {
                 $this->message[] = $getSpeedByLoc['message'];
             }
-            if($getSpeedByLoc['code'])
+
+            if(false)
             {
                 $speedData['speed_origine'] = $getSpeedByLoc['sanfrancisco'] ;
                 $speedData['speed'] = '' ;
@@ -86,7 +87,20 @@ class AmazonApiMonitoring
                     $this->message[] = $speedDetails['message'] ;
                 }
             }
-            dp($speedDetails);
+        }
+
+        if(!empty($this->message))
+        {
+            $messageBody = '';
+            foreach( $this->message as $error)
+            {
+                $messageBody .= $error.'<br>';
+            }
+            $to      = $this->config['to_email'];
+            $subject = 'the subject';
+            $headers = 'From: '. $this->config['from_email'];
+
+            mail($to, $subject, $messageBody, $headers);
         }
     }
 
@@ -96,12 +110,16 @@ class AmazonApiMonitoring
      * @return array
      */
     private function createInstance()
-    {
+    {   
+        $postFields  = 'region_code=us-east-1&';
+        $postFields .= 'init_url=google.com&';
+        $postFields .= 'url=www.google.com&';
+        $postFields .= 'create_config_file=true';
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, 'http://deploy.aiscaler.com/createinstance');
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, "region_code=us-east-1&init_url=google.com&url=www.google.com&create_config_file=true");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -110,6 +128,7 @@ class AmazonApiMonitoring
         curl_close ($ch);
         return (array)json_decode($server_output);
     }
+
     /**
      * Sending CURL to check speed
      * 
@@ -137,13 +156,19 @@ class AmazonApiMonitoring
      * 
      * @return array
      */
-    private function getInstance()
+    private function getInstance($instanceId)
     {
+        $postField  = 'region_code=us-east-1&';
+        $postField .= 'instanceId='.$instanceId.'&';
+        $postField .= 'init_url=google.com&';
+        $postField .= 'url=www.google.com&';
+        $postField .= 'protocol=http&';
+        $postField .= 'instance_count=1';
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, 'http://deploy.aiscaler.com/getinstance');
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, "region_code=us-east-1&instanceId=i-4e028ec8&init_url=google.com&url=www.google.com&protocol=http&instance_count=1");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postField);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
@@ -153,6 +178,7 @@ class AmazonApiMonitoring
 
         return (array)json_decode($server_output);
     }
+
     /**
      * Sending CURL to get speed by location
      * 
@@ -175,6 +201,7 @@ class AmazonApiMonitoring
 
         return (array)json_decode($server_output);
     }
+
     /**
      * Sending CURL to get speed details
      *
@@ -183,13 +210,13 @@ class AmazonApiMonitoring
      */
     private function getSpeedDetails($speedData)
     {
-        $postField = 'url='. $this->config['domain'].'&';
-        $postField .= 'region_code='. $this->config['region_code'].'&';
-        $postField .= 'location='. $this->config['location'][0].'&';
-        $postField .= 'speed_origine='.$speedData['speed_origine'].'&';
-        $postField .= 'speed='.$speedData['speed'].'&';
-        $postField .= 'neustar_location_id='.$speedData['neustar_location_id'].'&';
-        $postField .= 'neustar_location_id_origine='.$speedData['neustar_location_id_origine'].'&';
+        $postField  = 'url='.                           $this->config['domain'].'&';
+        $postField .= 'region_code='.                   $this->config['region_code'].'&';
+        $postField .= 'location='.                      $this->config['location'].'&';
+        $postField .= 'speed_origine='.                 $speedData['speed_origine'].'&';
+        $postField .= 'speed='.                         $speedData['speed'].'&';
+        $postField .= 'neustar_location_id='.           $speedData['neustar_location_id'].'&';
+        $postField .= 'neustar_location_id_origine='.   $speedData['neustar_location_id_origine'].'&';
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, 'http://deploy.aiscaler.com/getspeeddetails');
@@ -204,5 +231,4 @@ class AmazonApiMonitoring
 
         return (array)json_decode($server_output);
     }
-
 }

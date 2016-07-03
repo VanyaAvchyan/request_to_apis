@@ -9,6 +9,7 @@
         'amis_region_code'=> 'ami-6089d208',
         'subnets'         => 'subnet-b6a061c1',
         'region'          => 'ec2.us-east-1.amazonaws.com',
-        'to_email'        => 'test@test.com',
+        'to_email'        => 'admin@test.com',
+        'from_email'      => 'cron@test.com',
         'location'        => ['sanfrancisco']
     ];
