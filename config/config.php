@@ -16,7 +16,7 @@ return [
     'location'              => ['sanfrancisco'],
     'create_config_file'    => true,
     'duration'              => 3,
-    'valid_speed'           => 0,
+    'no_valid_speed'        => 0,
     'protocol'              => 'http',
     'instance_count'        => 1,
     'validation_error'      => 'actionn get not a valid response',

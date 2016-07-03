@@ -47,17 +47,18 @@ class AmazonApiMonitoring
     public function run()
     {
         set_time_limit(0);
-        
+
         $getUrl = $this->getUrl();
         if(!$getUrl['code'])
         {
             $this->message = $getUrl['message'];
             dp($this->sendMail(),false);
         }
-        $instance = $this->createInstance();
-        if(!$instance['code'])
+
+        $createdInstance = $this->createInstance();
+        if(!$createdInstance['code'])
         {
-            $this->message = $instance['message'];
+            $this->message = $createdInstance['message'];
             dp($this->sendMail(),false);
         }
 
@@ -68,32 +69,24 @@ class AmazonApiMonitoring
             dp($this->sendMail(),false);
         }
 
-        $getInst = $this->getInstance($instance['instanceId']);
+        $getInst = $this->getInstance($createdInstance['instanceId']);
         if(!$getInst['code'])
         {
             $this->message = $getInst['message'];
             dp($this->sendMail(),false);
         }
-        
-        $getSpeedByLoc = $this->getSpeedByLocation($speed['neustar_id']);
-        if (!$getSpeedByLoc['code'])
-        {
-            $this->message = $getSpeedByLoc['message'];
-            dp($this->sendMail(),false);
-        }
+//
+//        $getSpeedByLoc = $this->getSpeedByLocation($speed['neustar_id']);
+//        if (!$getSpeedByLoc['code'])
+//        {
+//            $this->message = $getSpeedByLoc['message'];
+//            dp($this->sendMail(),false);
+//        }
 
-        if(false)
+        $speedDetails = $this->getSpeedDetails($speed);
+        if(!$speedDetails['code'])
         {
-            $speedData['speed_origine'] = $getSpeedByLoc['sanfrancisco'] ;
-            $speedData['speed'] = '' ;
-            $speedData['neustar_location_id'] = '' ;
-            $speedData['neustar_location_id_origine'] = '' ;
-
-            $speedDetails = $this->getSpeedDetails($speedData);
-            if(!$speedDetails['code'])
-            {
-                $this->message = $speedDetails['message'] ;
-            }
+            $this->message = $speedDetails['message'] ;
         }
         dp('Everithing is ok');
     }
@@ -126,22 +119,6 @@ class AmazonApiMonitoring
     }
 
     /**
-     * Sending CURL to check speed
-     * 
-     * @return array
-     */
-    private function getSpeed()
-    {
-        $postFields  = 'website='.$this->config['domain'].'&';
-        $postFields .= 'region_code=origine_website&';
-        $postFields .= 'init_url='.$this->config['init_url'].'&';
-        $postFields .= 'url='.$this->config['domain'].'&';
-        $postFields .= 'public_dns=';
-        $curl_out    = $this->curlPostRequst($this->config['live_actions']['getSpeed'], $postFields);
-        return $this->isValidResponse($curl_out,__FUNCTION__);
-    }
-
-    /**
      * Sending CURL to get instance
      * 
      * @return array
@@ -155,8 +132,59 @@ class AmazonApiMonitoring
         $postFields .= 'protocol='.      $this->config['protocol'].'&';
         $postFields .= 'instance_count='.$this->config['instance_count'];
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['getInstance'], $postFields);
-
         return $this->isValidResponse($curl_out,__FUNCTION__);
+    }
+
+    /**
+     * Sending CURL to check speed
+     * 
+     * @return array
+     */
+    private function getSpeed()
+    {
+        $cnt = 0;
+        $arr = [];
+        
+        $postFields  = 'website='.$this->config['domain'].'&';
+        $postFields .= 'region_code=origine_website&';
+        $postFields .= 'init_url='.$this->config['init_url'].'&';
+        $postFields .= 'url='.$this->config['domain'].'&';
+        $postFields .= 'public_dns=';
+        $url = $this->config['live_actions']['getSpeed'];
+
+        for( $i = 1; $i <= 2; $i++ )
+        {
+            $cnt++;
+            $curl_out       = $this->curlPostRequst($url, $postFields);
+            $valid_response = $this->isValidResponse($curl_out,__FUNCTION__);
+            if($valid_response['code'])
+            {
+                $arr [] = $valid_response['neustar_id'].'/'.$valid_response['sanfrancisco_id'];
+            }  else {
+                $i--;
+            }
+            if($cnt == $this->config['duration'])
+                return [
+                    'code'    => 0,
+                    'message' => $this->config['wrong_duration'].$cnt
+                ];
+        }
+        if( count($arr) > 1 )
+        {
+            $getSpeedByLoc = $this->getSpeedByLocation($valid_response['neustar_id']);
+            if (!$getSpeedByLoc['code'])
+            {
+                $this->message = $getSpeedByLoc['message'];
+                dp($this->sendMail(),false);
+            }
+            
+            $valid_response['speed_origine']                = $getSpeedByLoc['speed_origine'];
+            $valid_response['speed']                        = $getSpeedByLoc['speed'];
+            $valid_response['random_faster']                = $getSpeedByLoc['random_faster'];
+            $valid_response['neustar_location_id_origine']  = $arr[0];
+            $valid_response['neustar_location_id']          = $arr[1];
+        }
+        return $valid_response;
     }
 
     /**
@@ -167,34 +195,44 @@ class AmazonApiMonitoring
      */
     private function getSpeedByLocation($neuStarId)
     {
-        $cnt = 0;
-        while ($neuStarId && $cnt < $this->config['duration']){
-            $cnt++;
-            $postFields .= "neustar_id=".$neuStarId;
+        $cntSBL = 0;
+        while ($neuStarId && $cntSBL < $this->config['duration'])
+        {
+            $cntSBL++;
+            $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
             $validRequst = $this->isValidResponse($curl_out,__FUNCTION__);
             if($validRequst['code'])
             {
-                $valid_sped = $this->config['valid_speed'];
+                $no_valid_speed = $this->config['no_valid_speed'];
                 if(!isset($validRequst['speed_sanfrancisco']) && !isset($validRequst['speed_singapore']) && !isset($validRequst['speed_dublin']) && !isset($validRequst['speed_washingtondc']) ){
                     return [
                         'code'    => 0,
                         'message' => $this->config['wrong_code'].__LINE__
                     ];
                 }
-                if($validRequst['speed_sanfrancisco'] > $valid_sped && $validRequst['speed_singapore'] > $valid_sped && $validRequst['speed_dublin'] > $valid_sped && $validRequst['speed_washingtondc'] > $valid_sped)
+                if($validRequst['speed_sanfrancisco'] > $no_valid_speed && $validRequst['speed_singapore'] > $no_valid_speed && $validRequst['speed_dublin'] > $no_valid_speed && $validRequst['speed_washingtondc'] > $no_valid_speed){
+                    $validRequst['speed_origine'] = $validRequst['speed_sanfrancisco'];
+                    $validRequst['speed'] = 1.78;
+                    $validRequst['random_faster'] = 16;
                     return $validRequst;
-                if( $cnt > $this->config['duration'] )
+                }
+
+                if( $cntSBL == $this->config['duration'] )
                     return [
                         'code'    => 0,
-                        'message' => $this->config['wrong_duration'].$cnt
+                        'message' => $this->config['wrong_duration'].$cntSBL
                     ];
             }
             return [
                 'code'    => 0,
-                'message' => $this->config['wrong_duration'].$cnt
+                'message' => $this->config['wrong_duration'].$cntSBL
             ];
         }
+        return [
+            'code'    => 0,
+            'message' => 'Something wet wrong,line '.__LINE__
+        ];
     }
 
     /**
@@ -207,9 +245,10 @@ class AmazonApiMonitoring
     {
         $postFields  = 'url='.                           $this->config['domain'].'&';
         $postFields .= 'region_code='.                   $this->config['region_code'].'&';
-        $postFields .= 'location='.                      $this->config['location'].'&';
+        $postFields .= 'location='.                      $this->config['location'][0].'&';
         $postFields .= 'speed_origine='.                 $speedData['speed_origine'].'&';
         $postFields .= 'speed='.                         $speedData['speed'].'&';
+        $postFields .= 'random_faster='.                 $speedData['random_faster'].'&';
         $postFields .= 'neustar_location_id='.           $speedData['neustar_location_id'].'&';
         $postFields .= 'neustar_location_id_origine='.   $speedData['neustar_location_id_origine'];
         
@@ -258,8 +297,9 @@ class AmazonApiMonitoring
             'message' => $type.' '.$this->config['validation_error']
         ];
     }
+
     /**
-     * Validation response data
+     * Validating response data
      * 
      * @param string $response
      * @return array|boolean
