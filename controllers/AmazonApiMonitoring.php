@@ -50,29 +50,33 @@ class AmazonApiMonitoring
         set_time_limit(0);
         $instance = $this->createInstance();
 
-        if(!$instance['code']){
+        if(!$instance['code'])
+        {
             $this->message[] = $instance['message'];
         }
 
         $speed = $this->getSpeed();
 
-        if(!$speed['code']){
+        if(!$speed['code'])
+        {
             $this->message[] = $speed['message'];
         }
         dp($speed);
 
         $getInst = $this->getInstance();
-        if(!$getInst['code']){
+        if(!$getInst['code'])
+        {
             $this->message[] = $getInst['message'];
         }
         if($speed['code'] && isset($speed['neustar_id'])) {
             $getSpeedByLoc = $this->getSpeedByLocation($speed['neustar_id']);
-            if (!$getSpeedByLoc['code']) {
+            if (!$getSpeedByLoc['code'])
+            {
                 $this->message[] = $getSpeedByLoc['message'];
             }
-            if($getSpeedByLoc['code']){
-                $speedData = [];
-                $speedData['speed_origine'] = $this->getSpeedByLocation()['sanfrancisco'] ;
+            if($getSpeedByLoc['code'])
+            {
+                $speedData['speed_origine'] = $getSpeedByLoc['sanfrancisco'] ;
                 $speedData['speed'] = '' ;
                 $speedData['neustar_location_id'] = '' ;
                 $speedData['neustar_location_id_origine'] = '' ;
@@ -82,7 +86,6 @@ class AmazonApiMonitoring
                     $this->message[] = $speedDetails['message'] ;
                 }
             }
-
             dp($speedDetails);
         }
     }

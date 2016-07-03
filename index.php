@@ -1,7 +1,5 @@
 <?php
 
-include 'vendor/autoload.php';
-
 function autoLoader($name)
 {
     if(file_exists('controllers/'.$name.'.php')){
