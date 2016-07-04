@@ -87,8 +87,17 @@ class AmazonApiMonitoring
         if(!$speedDetails['code'])
         {
             $this->message = $speedDetails['message'] ;
+            dp($this->sendMail(),false);
         }
-        dp('Everithing is ok');
+
+        $displayReport = $this->displayReport($speedDetails);
+        if(!$displayReport['code'])
+        {
+            $this->message = $displayReport['message'];
+            dp($this->sendMail(),false);
+        }
+        $report = 'Everything is ok.'.$displayReport['message'].': Fil name is '.$displayReport['report_file_name'];
+        dp($report);
     }
 
     /**
@@ -226,7 +235,7 @@ class AmazonApiMonitoring
             }
             return [
                 'code'    => 0,
-                'message' => $this->config['wrong_duration'].$cntSBL
+                'message' => $validRequst['message'].'.Line '.__LINE__
             ];
         }
         return [
@@ -253,6 +262,26 @@ class AmazonApiMonitoring
         $postFields .= 'neustar_location_id_origine='.   $speedData['neustar_location_id_origine'];
         
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedDetails'], $postFields);
+        return $this->isValidResponse($curl_out,__FUNCTION__);
+    }
+
+    /**
+     * Display report action generating pdf file
+     *
+     * @param array $reportData
+     * @return array
+     */
+    private function displayReport($reportData)
+    {
+        $postFields  = 'table_html='.                       $reportData['waterfall_html'].'&';
+        $postFields .= 'get_perc_by='.                      $this->config['get_perc_by'].'&';
+        $postFields .= 'recommanded_region[0][fullname]='.  $this->config['rec_region_fullname'].'&';
+        $postFields .= 'recommanded_region[0][name]='.      $this->config['rec_region_name'].'&';
+        $postFields .= 'recommanded_region[0][class_name]='.$this->config['rec_region_class_name'].'&';
+        $postFields .= 'recommanded_region[0][prec]='.      $this->config['rec_region_prec'].'&';
+        $postFields .= 'url='.                              $this->config['domain'].'&';
+        
+        $curl_out   = $this->curlPostRequst($this->config['live_actions']['displayReport'], $postFields);
         return $this->isValidResponse($curl_out,__FUNCTION__);
     }
     

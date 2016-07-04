@@ -13,10 +13,15 @@ return [
     'to_email'              => 'admin@test.com',
     'from_email'            => 'cron@test.com',
     'email_subjct'          => 'Cron returns an error',
+    'rec_region_fullname'   => 'US East (N. Virginia)',
+    'rec_region_name'       => 'N. Virginia',
+    'rec_region_class_name' => 'virginia',
+    'rec_region_class_prec' => '40',
     'location'              => ['sanfrancisco'],
     'create_config_file'    => true,
     'duration'              => 3,
     'no_valid_speed'        => 0,
+    'get_perc_by'           => '2-18 %',
     'protocol'              => 'http',
     'instance_count'        => 1,
     'validation_error'      => 'actionn get not a valid response',
@@ -29,6 +34,7 @@ return [
         'getSpeed'            => 'http://deploy.aiscaler.com/getspeed',
         'getInstance'         => 'http://deploy.aiscaler.com/getinstance',
         'getSpeedByLocation'  => 'http://deploy.aiscaler.com/getspeedbylocation',
-        'getSpeedDetails'     =>'http://deploy.aiscaler.com/getspeeddetails'
+        'getSpeedDetails'     =>'http://deploy.aiscaler.com/getspeeddetails',
+        'displayReport'       =>'http://deploy.aiscaler.com/displayreport'
     ]
 ];
