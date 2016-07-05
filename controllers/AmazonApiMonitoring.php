@@ -47,7 +47,7 @@ class AmazonApiMonitoring
         if(!$getUrl['code'])
         {
             $this->message = $getUrl['message'];
-            dp($this->sendMail(),false);
+            dp($this->sendMail('getUrl'),false);
         }
         else{
             echo $getUrl['message'].'<br>';
@@ -63,7 +63,7 @@ class AmazonApiMonitoring
         if(!$createdInstance['code'])
         {
             $this->message = $createdInstance['message'];
-            dp($this->sendMail(),false);
+            dp($this->sendMail('createInstance'),false);
         }
         else{
             echo $createdInstance['message'].'<br>';
@@ -79,11 +79,12 @@ class AmazonApiMonitoring
         if(!$speed['code'])
         {
             $this->message = $speed['message'];
-            dp($this->sendMail(),false);
+            dp($this->sendMail('getSpeed'),false);
         }
         else{
             echo $speed['message'].'<br>';
         }
+        
         /**
          * Call getSpeed private method and check returned data
          * If returned data column code == 0, 
@@ -94,7 +95,7 @@ class AmazonApiMonitoring
         if(!$getInst['code'])
         {
             $this->message = $getInst['message'];
-            dp($this->sendMail(),false);
+            dp($this->sendMail('getInstance'),false);
         }
         else
         {
@@ -111,7 +112,7 @@ class AmazonApiMonitoring
         if(!$speedDetails['code'])
         {
             $this->message = $speedDetails['message'] ;
-            dp($this->sendMail(),false);
+            dp($this->sendMail('getSpeedDetails'),false);
         }
         else{
             echo $speedDetails['message'].'<br>';
@@ -127,7 +128,7 @@ class AmazonApiMonitoring
         if(!$displayReport['code'])
         {
             $this->message = $displayReport['message'];
-            dp($this->sendMail(),false);
+            dp($this->sendMail('displayReport'),false);
         }
         else{
             echo $displayReport['message'].'<br>';
@@ -224,7 +225,7 @@ class AmazonApiMonitoring
             if (!$getSpeedByLoc['code'])
             {
                 $this->message = $getSpeedByLoc['message'];
-                dp($this->sendMail(),false);
+                dp($this->sendMail('getSpeedByLocation'),false);
             }
             
             $valid_response['speed_origine']                = $getSpeedByLoc['speed_origine'];
@@ -339,6 +340,12 @@ class AmazonApiMonitoring
      */
     private function isValidResponse($response, $type)
     {
+        if(is_array($response)){
+            return [
+                'code'=>0,
+                'message' => $type.$this->config['not_valid_respons_msg']
+            ];
+        }
         $output = (array)json_decode($response);
         if(!isset($output['code']) && !isset($output['message']))
             return 
@@ -346,26 +353,15 @@ class AmazonApiMonitoring
                 'code'    => 0,
                 'message' => $this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__
             ];
-        if(!empty($output))
-            return $output;
-        return
-        [
-            'code'    => 0,
-            'message' => $type.' '.$this->config['validation_error']
-        ];
+        return $output;
     }
 
     /**
-<<<<<<< HEAD
      * Sending Curl
      * 
-     * @param string $url, $postFields
-=======
-     * Validating response data
-     *
-     * @param string $response
->>>>>>> 63317efcc891265f55a82170ae77d80877a89f21
-     * @return array|boolean
+     * @param string $url
+     * @param array $postFields
+     * @return array
      */
     private function curlPostRequst( $url, $postFields )
     {
@@ -395,34 +391,31 @@ class AmazonApiMonitoring
      * 
      * @return boolean
      */
-    private function sendMail()
+    private function sendMail($name)
     {
+        if(!$this->message && empty($this->message))
+            dp('Somthing wet wrong , message is missing');
+        
         $logPath = __DIR__.'/../log.txt';
         // create a log channel
-        $log = new Logger('name');
+        $log = new Logger($name);
         $log->pushHandler(new StreamHandler($logPath, Logger::WARNING));
 
         // add records to the log
         $log->warning($this->message);
-        //$log->error($this->message);
-        dp($this->message);
-        
-        
-        
-        
-        if(!$this->message && empty($this->message))
-            dp('Somthing wet wrong , message is missing');
-        
+
         $to      = $this->config['to_email'];
         $subject = $this->config['email_subjct'];
         $headers = 'From: '. $this->config['from_email'];
         
-        error_log($this->message);
-        
         if( !mail( $to, $subject, $this->message, $headers ) ){
-            error_log(error_get_last());
-            dp(error_get_last());
+            $mail = new Logger('E-Mail');
+            $mail->pushHandler(new StreamHandler($logPath, Logger::WARNING));
+
+            // add records to the log
+            $mail->warning(error_get_last());
+            return 'E-mail not sent :'.error_get_last();
         }
-        return 'Error successfuly logged into '.ini_get('error_log');
+        return 'Error into '.$name.',Log fil is '.realpath($logPath);
     }
 }
