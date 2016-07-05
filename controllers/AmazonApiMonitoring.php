@@ -1,21 +1,4 @@
 <?php
-/**
- * Dumping result and exiting kode
- * 
- * @param mix $data
- * @param boolan $type if true xecute print_r else var_dump
- * @return var_dump | print_r
- */
-function dp($data, $type = true){
-    echo '<pre>';
-    if($type){
-        print_r($data);
-    }
-    else{
-        var_dump($data);
-    }
-    exit();
-}
 
 class AmazonApiMonitoring
 {
@@ -34,9 +17,10 @@ class AmazonApiMonitoring
      * 
      * @return void
      */
-    public function __construct()
+    public function __construct($config)
     {
-        $this->config = include __DIR__ . "/../config/config.php";
+        $this->config = $config;
+        //dp($config);
     }
 
     /**
@@ -210,9 +194,7 @@ class AmazonApiMonitoring
     private function getSpeed()
     {
         $start_time = time();
-        $cnt = 0;
         $arr = [];
-        
         $postFields  = 'website='.$this->config['domain'].'&';
         $postFields .= 'region_code=origine_website&';
         $postFields .= 'init_url='.$this->config['init_url'].'&';
@@ -222,7 +204,6 @@ class AmazonApiMonitoring
 
         for( $i = 1; $i <= 2; $i++ )
         {
-            $cnt++;
             $curl_out       = $this->curlPostRequst($url, $postFields);
             $valid_response = $this->isValidResponse($curl_out,__FUNCTION__);
             if($valid_response['code'])
@@ -265,15 +246,12 @@ class AmazonApiMonitoring
      */
     private function getSpeedByLocation($neuStarId)
     {
-        sleep (1);
         $location_start_time = time();
-        $cntSBL = 0;
-        while ($neuStarId && $cntSBL < $this->config['duration'])
+        while ($neuStarId)
         {
-            $cntSBL++;
             $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
-            $validRequst = $this->isValidResponse($curl_out,__FUNCTION__);
+            $validRequst = $this->isValidResponse($curl_out,'getSpeedByLocation');
             if($validRequst['code'])
             {
                 $no_valid_speed = $this->config['no_valid_speed'];
@@ -298,13 +276,14 @@ class AmazonApiMonitoring
             }
             return [
                 'code'    => 0,
-                'message' => $validRequst['message'].'.Line '.__LINE__
+                'message' => 11111111
+//                'message' => $validRequst['message'].'.Line '.__LINE__
             ];
             
         }
         return [
             'code'    => 0,
-            'message' => 'Something wet wrong,line '.__LINE__
+            'message' => 'Something wet wrong, neuStarId is not defined. Line '.__LINE__
         ];
     }
 
@@ -383,9 +362,10 @@ class AmazonApiMonitoring
     {
         $output = (array)json_decode($response);
         if(!isset($output['code']) && !isset($output['message']))
-            return [
+            return 
+            [
                 'code'    => 0,
-                'message' => $this->config['wrong_code'].'Action '.$type.',  Look at line '.__LINE__
+                'message' => $this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__
             ];
         if(!empty($output))
             return $output;
@@ -395,10 +375,10 @@ class AmazonApiMonitoring
             'message' => $type.' '.$this->config['validation_error']
         ];
     }
-    
+
     /**
      * Validating response data
-     * 
+     *
      * @param string $response
      * @return array|boolean
      */
@@ -424,4 +404,5 @@ class AmazonApiMonitoring
         }
         return $server_output;
     }
+
 }
