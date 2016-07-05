@@ -1,16 +1,5 @@
 <?php
 
-function dp($data, $type = true){
-    echo '<pre>';
-    if($type){
-        print_r($data);
-    }
-    else{
-        var_dump($data);
-    }
-    exit();
-}
-
 class AmazonApiMonitoring
 {
     /**
@@ -28,9 +17,10 @@ class AmazonApiMonitoring
      * 
      * @return void
      */
-    public function __construct()
+    public function __construct($config)
     {
-        $this->config = include __DIR__ . "/../config/config.php";
+        $this->config = $config;
+        //dp($config);
     }
 
     /**
@@ -48,55 +38,107 @@ class AmazonApiMonitoring
     {
         set_time_limit(0);
 
+        /**
+         * Call getUrl private method and check returned data
+         * If returned data column code == 0, 
+         * code stops working and calling sendMail private method.
+         * Else output success message         * 
+         */
         $getUrl = $this->getUrl();
         if(!$getUrl['code'])
         {
             $this->message = $getUrl['message'];
             dp($this->sendMail(),false);
         }
+        else{
+            echo $getUrl['message'].'<br>';
+        }
 
+        /**
+         * Call createInstance private method and check returned data
+         * If returned data column code == 0, 
+         * code stops working and calling sendMail private method.
+         * Else output success message         * 
+         */
         $createdInstance = $this->createInstance();
         if(!$createdInstance['code'])
         {
             $this->message = $createdInstance['message'];
             dp($this->sendMail(),false);
         }
-
+        else{
+            echo $createdInstance['message'].'<br>';
+        }
+        
+        /**
+         * Call getSpeed private method and check returned data
+         * If returned data column code == 0, 
+         * code stops working and calling sendMail private method.
+         * Else output success message         * 
+         */
         $speed = $this->getSpeed();
         if(!$speed['code'])
         {
             $this->message = $speed['message'];
             dp($this->sendMail(),false);
         }
+        else{
+            echo $speed['message'].'<br>';
+        }
 
+        /**
+         * Call getSpeed private method and check returned data
+         * If returned data column code == 0, 
+         * code stops working and calling sendMail private method.
+         * Else output success message         * 
+         */
         $getInst = $this->getInstance($createdInstance['instanceId']);
         if(!$getInst['code'])
         {
             $this->message = $getInst['message'];
             dp($this->sendMail(),false);
         }
-//
-//        $getSpeedByLoc = $this->getSpeedByLocation($speed['neustar_id']);
-//        if (!$getSpeedByLoc['code'])
-//        {
-//            $this->message = $getSpeedByLoc['message'];
-//            dp($this->sendMail(),false);
-//        }
+        else
+        {
+            echo $getInst['message'].'<br>';
+        }
 
+        /**
+         * Call getSpeedDetails private method and check returned data
+         * If returned data column code == 0, 
+         * code stops working and calling sendMail private method.
+         * Else output success message         * 
+         */
         $speedDetails = $this->getSpeedDetails($speed);
         if(!$speedDetails['code'])
         {
             $this->message = $speedDetails['message'] ;
             dp($this->sendMail(),false);
         }
-
+        else{
+            echo $speedDetails['message'].'<br>';
+        }
+ 
+        /**
+         * Call displayReport private method and check returned data
+         * If returned data column code == 0, 
+         * code stops working and calling sendMail private method.
+         * Else output success message         * 
+         */
         $displayReport = $this->displayReport($speedDetails);
         if(!$displayReport['code'])
         {
             $this->message = $displayReport['message'];
             dp($this->sendMail(),false);
         }
-        $report = 'Everything is ok.'.$displayReport['message'].': Fil name is '.$displayReport['report_file_name'];
+        else{
+            echo $displayReport['message'].'<br>';
+        }
+
+        /**
+         * After this all displaing success message
+         */
+        $report = 'Everything is ok.Fil name is '.$displayReport['report_file_name'];
         dp($report);
     }
 
@@ -151,9 +193,8 @@ class AmazonApiMonitoring
      */
     private function getSpeed()
     {
-        $cnt = 0;
+        $start_time = time();
         $arr = [];
-        
         $postFields  = 'website='.$this->config['domain'].'&';
         $postFields .= 'region_code=origine_website&';
         $postFields .= 'init_url='.$this->config['init_url'].'&';
@@ -163,7 +204,6 @@ class AmazonApiMonitoring
 
         for( $i = 1; $i <= 2; $i++ )
         {
-            $cnt++;
             $curl_out       = $this->curlPostRequst($url, $postFields);
             $valid_response = $this->isValidResponse($curl_out,__FUNCTION__);
             if($valid_response['code'])
@@ -172,12 +212,14 @@ class AmazonApiMonitoring
             }  else {
                 $i--;
             }
-            if($cnt == $this->config['duration'])
+            $duration = time() - $start_time;
+            if($duration >= $this->config['duration'])
                 return [
                     'code'    => 0,
-                    'message' => $this->config['wrong_duration'].$cnt
+                    'message' => $this->config['wrong_duration'].$this->config['duration'].' seconds.Action '.__FUNCTION__
                 ];
         }
+
         if( count($arr) > 1 )
         {
             $getSpeedByLoc = $this->getSpeedByLocation($valid_response['neustar_id']);
@@ -204,13 +246,12 @@ class AmazonApiMonitoring
      */
     private function getSpeedByLocation($neuStarId)
     {
-        $cntSBL = 0;
-        while ($neuStarId && $cntSBL < $this->config['duration'])
+        $location_start_time = time();
+        while ($neuStarId)
         {
-            $cntSBL++;
             $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
-            $validRequst = $this->isValidResponse($curl_out,__FUNCTION__);
+            $validRequst = $this->isValidResponse($curl_out,'getSpeedByLocation');
             if($validRequst['code'])
             {
                 $no_valid_speed = $this->config['no_valid_speed'];
@@ -222,25 +263,27 @@ class AmazonApiMonitoring
                 }
                 if($validRequst['speed_sanfrancisco'] > $no_valid_speed && $validRequst['speed_singapore'] > $no_valid_speed && $validRequst['speed_dublin'] > $no_valid_speed && $validRequst['speed_washingtondc'] > $no_valid_speed){
                     $validRequst['speed_origine'] = $validRequst['speed_sanfrancisco'];
-                    $validRequst['speed'] = 1.78;
-                    $validRequst['random_faster'] = 16;
+                    $validRequst['speed'] = $this->config['avarage_speed'];
+                    $validRequst['random_faster'] = $this->config['random_faster'];
                     return $validRequst;
                 }
-
-                if( $cntSBL == $this->config['duration'] )
+                $location_duration = time() - $location_start_time;
+                if( $location_duration >= $this->config['duration'] )
                     return [
                         'code'    => 0,
-                        'message' => $this->config['wrong_duration'].$cntSBL
+                        'message' => $this->config['wrong_duration'].$this->config['duration'].' seconds.Action getSpeedByLocation'
                     ];
             }
             return [
                 'code'    => 0,
-                'message' => $validRequst['message'].'.Line '.__LINE__
+                'message' => 11111111
+//                'message' => $validRequst['message'].'.Line '.__LINE__
             ];
+            
         }
         return [
             'code'    => 0,
-            'message' => 'Something wet wrong,line '.__LINE__
+            'message' => 'Something wet wrong, neuStarId is not defined. Line '.__LINE__
         ];
     }
 
@@ -292,18 +335,23 @@ class AmazonApiMonitoring
      */
     private function sendMail()
     {
-        return $this->message;
         if(!$this->message && empty($this->message))
             dp('Somthing wet wrong , message is missing');
+        
+        
+        
         $to      = $this->config['to_email'];
         $subject = $this->config['email_subjct'];
         $headers = 'From: '. $this->config['from_email'];
-
+        
+        error_log($this->message);
+        return $this->message;
+        
         if( mail( $to, $subject, $this->message, $headers ) )
             return true;
         return false;
     }
-    
+
     /**
      * Validation response data
      * 
@@ -314,9 +362,10 @@ class AmazonApiMonitoring
     {
         $output = (array)json_decode($response);
         if(!isset($output['code']) && !isset($output['message']))
-            return [
+            return 
+            [
                 'code'    => 0,
-                'message' => $this->config['wrong_code'].'Action '.$type.',  Look at line '.__LINE__
+                'message' => $this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__
             ];
         if(!empty($output))
             return $output;
@@ -328,9 +377,15 @@ class AmazonApiMonitoring
     }
 
     /**
+<<<<<<< HEAD
      * Sending Curl
      * 
      * @param string $url, $postFields
+=======
+     * Validating response data
+     *
+     * @param string $response
+>>>>>>> 63317efcc891265f55a82170ae77d80877a89f21
      * @return array|boolean
      */
     private function curlPostRequst( $url, $postFields )
@@ -345,8 +400,9 @@ class AmazonApiMonitoring
         $server_output = curl_exec ($ch);
         $info = curl_getinfo($ch);
         curl_close ($ch);
-        
-        if($info['http_code'] && $info['http_code']  >= 400 ){
+
+        if($info['http_code'] && $info['http_code']  >= 400 )
+        {
             return [
                 'code'    => 0,
                 'message' => $url. $this->config['incorrect_url'].$info['http_code']
@@ -354,4 +410,5 @@ class AmazonApiMonitoring
         }
         return $server_output;
     }
+
 }
