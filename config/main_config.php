@@ -21,6 +21,8 @@ return [
     'wrong_code'            => 'Something wet wrong. Code is changed on the original site.',
     'wrong_duration'        => 'Alowable limit of script work exceeded the allowable limit of ',
     'incorrect_url'         => 'does not respond to a request. Hader code ',
+    'sero_speed_msg'        => 'All indicators zero speed. Line ',
+    'neeustar_error_msg'    => 'Something wet wrong, neuStarId is not defined. Line ',
     'live_actions'          => [
         'getUrl'             => 'http://deploy.aiscaler.com/geturl',
         'createInstance'      => 'http://deploy.aiscaler.com/createinstance',

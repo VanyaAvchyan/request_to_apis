@@ -20,7 +20,6 @@ class AmazonApiMonitoring
     public function __construct($config)
     {
         $this->config = $config;
-        //dp($config);
     }
 
     /**
@@ -274,16 +273,20 @@ class AmazonApiMonitoring
                         'message' => $this->config['wrong_duration'].$this->config['duration'].' seconds.Action getSpeedByLocation'
                     ];
             }
+            if($validRequst['code'])
+                return [
+                    'code'    => 0,
+                    'message' => $this->config['sero_speed_msg'].__LINE__
+                ];
             return [
                 'code'    => 0,
-                'message' => 11111111
-//                'message' => $validRequst['message'].'.Line '.__LINE__
+                'message' => $validRequst['message'].'.Line '.__LINE__
             ];
             
         }
         return [
             'code'    => 0,
-            'message' => 'Something wet wrong, neuStarId is not defined. Line '.__LINE__
+            'message' => $this->config['neeustar_error_msg'].__LINE__
         ];
     }
 
@@ -338,18 +341,16 @@ class AmazonApiMonitoring
         if(!$this->message && empty($this->message))
             dp('Somthing wet wrong , message is missing');
         
-        
-        
         $to      = $this->config['to_email'];
         $subject = $this->config['email_subjct'];
         $headers = 'From: '. $this->config['from_email'];
         
         error_log($this->message);
-        return $this->message;
         
         if( mail( $to, $subject, $this->message, $headers ) )
             return true;
-        return false;
+        error_log(error_get_last());
+        dp(error_get_last(). 111111);
     }
 
     /**
