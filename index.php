@@ -11,6 +11,7 @@ include __DIR__.'/vendor/autoload.php';
 function dp($data, $type = true){
     echo '<pre>';
     if($type){
+
         print_r($data);
     }
     else{
@@ -20,7 +21,7 @@ function dp($data, $type = true){
 }
 
 /**
- * This is a callback like __aoutoload for spl_autoload_register 
+     * This is a callback like __aoutoload for spl_autoload_register
  * 
  * @param string $name
  */

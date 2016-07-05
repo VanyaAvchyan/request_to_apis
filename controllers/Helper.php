@@ -2,7 +2,7 @@
 
 class Helper
 {
-    /** Dfault data for ini file */ 
+    /** Default data for ini file */
     private static $INI_DATA = [
         'last_location'  => false,
         'us_east_1'      => "us_east_1",
@@ -17,10 +17,10 @@ class Helper
     ];
 
     /**
-     * Crating ini file if not xists
+     * Crating ini file if not exists
      * Checking main_config.php file existing
      * Checking ini file and get current queue location
-     * Udate ini file with curreent data
+     * Udate ini file with current data
      * After geting current location, checking file existing with that name
      * 
      * @param string $filename ini fil name,default name is locations.ini
@@ -63,7 +63,7 @@ class Helper
      * 
      * @param array $array
      * @param string $file file name
-     * @reteurn void
+     * @return void
      */
     public static function write_php_ini(array $array, $file)
     {
@@ -109,7 +109,7 @@ class Helper
     }
     
     /**
-     * Get curernt location
+     * Get current location
      * 
      * @param array $arr
      * @param string $key

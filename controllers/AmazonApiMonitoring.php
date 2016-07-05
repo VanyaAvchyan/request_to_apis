@@ -356,9 +356,15 @@ class AmazonApiMonitoring
     }
 
     /**
+<<<<<<< HEAD
+     * Sending Curl
+     * 
+     * @param string $url, $postFields
+=======
      * Validating response data
      *
      * @param string $response
+>>>>>>> 63317efcc891265f55a82170ae77d80877a89f21
      * @return array|boolean
      */
     private function curlPostRequst( $url, $postFields )
@@ -394,11 +400,16 @@ class AmazonApiMonitoring
         $logPath = __DIR__.'/../log.txt';
         // create a log channel
         $log = new Logger('name');
-        //$log->pushHandler(new StreamHandler('path/to/your.log', Logger::WARNING));
+        $log->pushHandler(new StreamHandler($logPath, Logger::WARNING));
 
         // add records to the log
-        $log->warning('Foo');
-        $log->error('Bar');
+        $log->warning($this->message);
+        //$log->error($this->message);
+        dp($this->message);
+        
+        
+        
+        
         if(!$this->message && empty($this->message))
             dp('Somthing wet wrong , message is missing');
         
