@@ -1,4 +1,6 @@
 <?php
+include __DIR__.'/vendor/autoload.php';
+
 /**
  * Dumping result and exiting kode
  * 

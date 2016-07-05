@@ -1,5 +1,6 @@
 <?php
-
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 class AmazonApiMonitoring
 {
     /**
@@ -19,6 +20,7 @@ class AmazonApiMonitoring
      */
     public function __construct($config)
     {
+        set_time_limit(0);
         $this->config = $config;
     }
 
@@ -35,8 +37,6 @@ class AmazonApiMonitoring
      */
     public function run()
     {
-        set_time_limit(0);
-
         /**
          * Call getUrl private method and check returned data
          * If returned data column code == 0, 
@@ -84,7 +84,6 @@ class AmazonApiMonitoring
         else{
             echo $speed['message'].'<br>';
         }
-
         /**
          * Call getSpeed private method and check returned data
          * If returned data column code == 0, 
@@ -218,10 +217,10 @@ class AmazonApiMonitoring
                     'message' => $this->config['wrong_duration'].$this->config['duration'].' seconds.Action '.__FUNCTION__
                 ];
         }
-
         if( count($arr) > 1 )
         {
             $getSpeedByLoc = $this->getSpeedByLocation($valid_response['neustar_id']);
+            
             if (!$getSpeedByLoc['code'])
             {
                 $this->message = $getSpeedByLoc['message'];
@@ -251,6 +250,7 @@ class AmazonApiMonitoring
             $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
             $validRequst = $this->isValidResponse($curl_out,'getSpeedByLocation');
+            
             if($validRequst['code'])
             {
                 $no_valid_speed = $this->config['no_valid_speed'];
@@ -330,28 +330,6 @@ class AmazonApiMonitoring
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['displayReport'], $postFields);
         return $this->isValidResponse($curl_out,__FUNCTION__);
     }
-    
-    /**
-     * Send mail
-     * 
-     * @return boolean
-     */
-    private function sendMail()
-    {
-        if(!$this->message && empty($this->message))
-            dp('Somthing wet wrong , message is missing');
-        
-        $to      = $this->config['to_email'];
-        $subject = $this->config['email_subjct'];
-        $headers = 'From: '. $this->config['from_email'];
-        
-        error_log($this->message);
-        
-        if( mail( $to, $subject, $this->message, $headers ) )
-            return true;
-        error_log(error_get_last());
-        dp(error_get_last(). 111111);
-    }
 
     /**
      * Validation response data
@@ -405,5 +383,35 @@ class AmazonApiMonitoring
         }
         return $server_output;
     }
+    
+    /**
+     * Send mail
+     * 
+     * @return boolean
+     */
+    private function sendMail()
+    {
+        $logPath = __DIR__.'/../log.txt';
+        // create a log channel
+        $log = new Logger('name');
+        //$log->pushHandler(new StreamHandler('path/to/your.log', Logger::WARNING));
 
+        // add records to the log
+        $log->warning('Foo');
+        $log->error('Bar');
+        if(!$this->message && empty($this->message))
+            dp('Somthing wet wrong , message is missing');
+        
+        $to      = $this->config['to_email'];
+        $subject = $this->config['email_subjct'];
+        $headers = 'From: '. $this->config['from_email'];
+        
+        error_log($this->message);
+        
+        if( !mail( $to, $subject, $this->message, $headers ) ){
+            error_log(error_get_last());
+            dp(error_get_last());
+        }
+        return 'Error successfuly logged into '.ini_get('error_log');
+    }
 }
