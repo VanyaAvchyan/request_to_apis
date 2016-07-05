@@ -396,7 +396,7 @@ class AmazonApiMonitoring
         if(!$this->message && empty($this->message))
             dp('Somthing wet wrong , message is missing');
         
-        $logPath = __DIR__.'/../log.txt';
+        $logPath = $this->config['wornings_log_path'];
         // create a log channel
         $log = new Logger($name);
         $log->pushHandler(new StreamHandler($logPath, Logger::WARNING));
