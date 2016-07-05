@@ -328,9 +328,9 @@ class AmazonApiMonitoring
     }
 
     /**
-     * Validating response data
+     * Sending Curl
      * 
-     * @param string $response
+     * @param string $url, $postFields
      * @return array|boolean
      */
     private function curlPostRequst( $url, $postFields )
