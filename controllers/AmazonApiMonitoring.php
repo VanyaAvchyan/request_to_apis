@@ -343,7 +343,7 @@ class AmazonApiMonitoring
         if(is_array($response)){
             return [
                 'code'=>0,
-                'message' => $type.$this->config['not_valid_respons_msg']
+                'message' => $type.$this->config['not_valid_respons_msg'].' ['.json_encode($response).']'
             ];
         }
         $output = (array)json_decode($response);
@@ -351,7 +351,7 @@ class AmazonApiMonitoring
             return 
             [
                 'code'    => 0,
-                'message' => $this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__
+                'message' => $this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__.' ['.$response.']'
             ];
         return $output;
     }
@@ -407,7 +407,7 @@ class AmazonApiMonitoring
         $to      = $this->config['to_email'];
         $subject = $this->config['email_subjct'];
         $headers = 'From: '. $this->config['from_email'];
-        
+
         if( !mail( $to, $subject, $this->message, $headers ) ){
             $mail = new Logger('E-Mail');
             $mail->pushHandler(new StreamHandler($logPath, Logger::WARNING));
