@@ -277,17 +277,17 @@ class AmazonApiMonitoring
             if($validRequst['code'])
                 return [
                     'code'    => 0,
-                    'message' => $this->config['sero_speed_msg'].__LINE__
+                    'message' => $this->config['sero_speed_msg'].__LINE__. ' ['.json_encode($validRequst).' ]'
                 ];
             return [
                 'code'    => 0,
-                'message' => $validRequst['message'].'.Line '.__LINE__
+                'message' => $validRequst['message'].'.Line '.__LINE__. ' ['.json_encode($validRequst).' ]'
             ];
             
         }
         return [
             'code'    => 0,
-            'message' => $this->config['neeustar_error_msg'].__LINE__
+            'message' => $this->config['neeustar_error_msg'].__LINE__. ' ['.json_encode($validRequst).' ]'
         ];
     }
 
