@@ -50,7 +50,7 @@ class AmazonApiMonitoring
             dp($this->sendMail('getUrl'),false);
         }
         else{
-            echo $getUrl['message'].'<br>';
+            echo $getUrl['message'].PHP_EOL;
         }
 
         /**
@@ -66,7 +66,7 @@ class AmazonApiMonitoring
             dp($this->sendMail('createInstance'),false);
         }
         else{
-            echo $createdInstance['message'].'<br>';
+            echo $createdInstance['message'].PHP_EOL;
         }
         
         /**
@@ -82,7 +82,7 @@ class AmazonApiMonitoring
             dp($this->sendMail('getSpeed'),false);
         }
         else{
-            echo $speed['message'].'<br>';
+            echo $speed['message'].PHP_EOL;
         }
         
         /**
@@ -99,7 +99,7 @@ class AmazonApiMonitoring
         }
         else
         {
-            echo $getInst['message'].'<br>';
+            echo $getInst['message'].PHP_EOL;
         }
 
         /**
@@ -115,7 +115,7 @@ class AmazonApiMonitoring
             dp($this->sendMail('getSpeedDetails'),false);
         }
         else{
-            echo $speedDetails['message'].'<br>';
+            echo $speedDetails['message'].PHP_EOL;
         }
  
         /**
@@ -131,7 +131,7 @@ class AmazonApiMonitoring
             dp($this->sendMail('displayReport'),false);
         }
         else{
-            echo $displayReport['message'].'<br>';
+            echo $displayReport['message'].PHP_EOL;
         }
 
         /**
@@ -227,7 +227,7 @@ class AmazonApiMonitoring
                 $this->message = $getSpeedByLoc['message'];
                 dp($this->sendMail('getSpeedByLocation'),false);
             }
-            
+
             $valid_response['speed_origine']                = $getSpeedByLoc['speed_origine'];
             $valid_response['speed']                        = $getSpeedByLoc['speed'];
             $valid_response['random_faster']                = $getSpeedByLoc['random_faster'];

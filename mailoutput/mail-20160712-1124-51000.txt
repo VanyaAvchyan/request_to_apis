@@ -1,0 +1,131 @@
+To: admin@test.com
+Subject: Cron returns an error
+From: cron@test.com
+
+Connections that are runned longer than 60 seconds
+\r\nconnection has been open for 180 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-85fc8956
+\r\n---> Image ID: ami-db56a2b0
+---> Private Dns Name: ip-172-30-1-165.ec2.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: aiProtect Denial of Service Protection-6-307a-AutogenByAWSMP-
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 180 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-962b417f
+\r\n---> Image ID: ami-8997afe0
+---> Private Dns Name: ip-10-167-76-241.ec2.internal
+\r\n---> Instance Type: m3.medium
+\r\n---> Security Group: Web Security
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 180 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-0be3038f
+\r\n---> Image ID: ami-fce3c696
+---> Private Dns Name: ip-172-30-1-131.ec2.internal
+\r\n---> Instance Type: t2.medium
+\r\n---> Security Group: aicache
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 180 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-2737b791
+\r\n---> Image ID: ami-805978e8
+---> Private Dns Name: ip-172-30-1-90.ec2.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: aicache
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 180 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-fc01787a
+\r\n---> Image ID: ami-6089d208
+---> Private Dns Name: ip-172-30-1-136.ec2.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 177 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-eea03fab
+\r\n---> Image ID: ami-cf7d998b
+---> Private Dns Name: ip-10-0-0-19.us-west-1.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 177 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-691e862c
+\r\n---> Image ID: ami-cf7d998b
+---> Private Dns Name: ip-10-0-0-28.us-west-1.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 175 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-fe9e726a
+\r\n---> Image ID: ami-3b14370b
+---> Private Dns Name: ip-10-0-0-220.us-west-2.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 177 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-3758b3b5
+\r\n---> Image ID: ami-a357eebe
+---> Private Dns Name: ip-10-0-0-227.sa-east-1.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 177 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-7b424ef1
+\r\n---> Image ID: ami-d7fd6ea0
+---> Private Dns Name: ip-10-0-0-235.eu-west-1.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 176 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-f3f6454e
+\r\n---> Image ID: ami-00dae61d
+---> Private Dns Name: ip-10-0-0-32.eu-central-1.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 176 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-ca16076e
+\r\n---> Image ID: ami-66546234
+---> Private Dns Name: ip-10-0-0-42.ap-southeast-1.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 176 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-003b028f
+\r\n---> Image ID: ami-93876e93
+---> Private Dns Name: ip-10-0-0-74.ap-northeast-1.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\nConnections that are runned longer than 60 seconds
+\r\nconnection has been open for 176 seconds
+\r\n---> State: running
+\r\n---> Instance ID: i-ac2e6de9
+\r\n---> Image ID: ami-cd4e3ff7
+---> Private Dns Name: ip-10-0-0-248.ap-southeast-2.compute.internal
+\r\n---> Instance Type: t2.micro
+\r\n---> Security Group: default
+\r\n======================================
+\r\n\r\n

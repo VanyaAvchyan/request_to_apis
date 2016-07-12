@@ -1,6 +1,6 @@
 <?php
-include __DIR__.'/vendor/autoload.php';
 
+include __DIR__.'/vendor/autoload.php';
 /**
  * Dumping result and exiting kode
  * 
@@ -20,6 +20,10 @@ function dp($data, $type = true){
     exit();
 }
 
+$type = false;
+
+if(isset($argv[1]))
+    $type = $argv[1];
 /**
      * This is a callback like __aoutoload for spl_autoload_register
  * 
@@ -36,5 +40,14 @@ function autoLoader($name)
  */
 spl_autoload_register('autoLoader');
 
-$newObj = new AmazonApiMonitoring(Helper::dataConfiguration());
-$newObj->run();
+if($type){
+    switch ($type){
+        case 'test' :
+            $newObj = (new AmazonApiMonitoring(Helper::dataConfiguration()))->run();break;
+        case 'monitor' :
+            $mainConfig = include __DIR__.'/config/main_config.php';
+            $newObj = (new CheckAmazoneInstances($mainConfig))->run();break;
+        default : echo ('Please select from these two (test or monitor)');
+    }
+}else
+    echo ('Please select checking type (test or monitor)');

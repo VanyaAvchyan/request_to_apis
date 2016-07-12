@@ -17,6 +17,8 @@ return [
     'no_valid_speed'        => 0,
     'instance_count'        => 1,
     'wornings_log_path'     => __DIR__.'/../log.txt',
+    'monitor_json_file'     => __DIR__.'/../config/monitor.json',
+    'monitor_log'           => __DIR__.'/../monitorLog.txt',
     'wrong_code'            => 'Something wet wrong. Code is changed on the original site.',
     'wrong_duration'        => 'Alowable limit of script work exceeded the allowable limit of ',
     'incorrect_url'         => 'does not respond to a request. Hader code ',
@@ -32,5 +34,17 @@ return [
         'getSpeedByLocation'  => 'http://deploy.aiscaler.com/getspeedbylocation',
         'getSpeedDetails'     =>'http://deploy.aiscaler.com/getspeeddetails',
         'displayReport'       =>'http://deploy.aiscaler.com/displayreport'
-    ]
+    ],
+    'regions'=>[
+        'us-east-1',
+        'us-west-1',
+        'us-west-2',
+        'sa-east-1',
+        'eu-west-1',
+        'eu-central-1',
+        'ap-southeast-1',
+        'ap-northeast-1',
+        'ap-southeast-2',
+    ],
+    'runned_duration' => 60
 ];

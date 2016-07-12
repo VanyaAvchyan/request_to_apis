@@ -1,5 +1,6 @@
 {
 	"require": {
-		"monolog/monolog": "^1.20"
+		"monolog/monolog": "^1.20",
+		"aws/aws-sdk-php-zf2": "1.2.1"
 	}
 }
