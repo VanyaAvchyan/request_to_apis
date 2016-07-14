@@ -1,0 +1,5 @@
+To: admin@test.com
+Subject: Cron <<test>> returns an error
+From: cron@test.com
+
+createInstance return Not valid response [{"code":0,"message":"http:\/\/deploy.aiscaler.com\/createinstancedoes not respond to a request. Hader code 500"}]

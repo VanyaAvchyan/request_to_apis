@@ -12,6 +12,11 @@ class AmazonApiMonitoring
      * @var string $message contains  error messages 
      */
     private $message = '';
+    
+    /**
+     * @var array $postData contains  all post data wich snded before success or error
+     */
+    private $postData = [];
 
     /**
      * Initialaizing custom properties
@@ -47,9 +52,10 @@ class AmazonApiMonitoring
         if(!$getUrl['code'])
         {
             $this->message = $getUrl['message'];
-            dp($this->sendMail('getUrl'),false);
+            dp($this->sendMail('getUrl',$this->postData),false);
         }
         else{
+            $this->sendMail('getUrl',  $this->postData);
             echo $getUrl['message'].PHP_EOL;
         }
 
@@ -63,9 +69,10 @@ class AmazonApiMonitoring
         if(!$createdInstance['code'])
         {
             $this->message = $createdInstance['message'];
-            dp($this->sendMail('createInstance'),false);
+            dp($this->sendMail('createInstance',$this->postData),false);
         }
         else{
+            $this->sendMail('createInstance',$this->postData);
             echo $createdInstance['message'].PHP_EOL;
         }
         
@@ -79,9 +86,10 @@ class AmazonApiMonitoring
         if(!$speed['code'])
         {
             $this->message = $speed['message'];
-            dp($this->sendMail('getSpeed'),false);
+            dp($this->sendMail('getSpeed',$this->postData),false);
         }
         else{
+            $this->sendMail('getSpeed',$this->postData);
             echo $speed['message'].PHP_EOL;
         }
         
@@ -95,10 +103,11 @@ class AmazonApiMonitoring
         if(!$getInst['code'])
         {
             $this->message = $getInst['message'];
-            dp($this->sendMail('getInstance'),false);
+            dp($this->sendMail('getInstance', $this->postData),false);
         }
         else
         {
+            $this->sendMail('getInstance', $this->postData);
             echo $getInst['message'].PHP_EOL;
         }
 
@@ -112,9 +121,10 @@ class AmazonApiMonitoring
         if(!$speedDetails['code'])
         {
             $this->message = $speedDetails['message'] ;
-            dp($this->sendMail('getSpeedDetails'),false);
+            dp($this->sendMail('getSpeedDetails', $this->postData),false);
         }
         else{
+            $this->sendMail('getSpeedDetails', $this->postData);
             echo $speedDetails['message'].PHP_EOL;
         }
  
@@ -128,16 +138,17 @@ class AmazonApiMonitoring
         if(!$displayReport['code'])
         {
             $this->message = $displayReport['message'];
-            dp($this->sendMail('displayReport'),false);
+            dp($this->sendMail('displayReport', $this->postData),false);
         }
         else{
+            $this->sendMail('displayReport', $this->postData);
             echo $displayReport['message'].PHP_EOL;
         }
 
         /**
          * After this all displaing success message
          */
-        $report = 'Everything is ok.Fil name is '.$displayReport['report_file_name'];
+        $report = $this->config['success_message'].$displayReport['report_file_name'];
         dp($report);
     }
 
@@ -150,7 +161,11 @@ class AmazonApiMonitoring
     {
         $postFields  = 'url='.$this->config['url'];
         $curl_out = $this->curlPostRequst( $this->config['live_actions']['getUrl'], $postFields);
-        return $this->isValidResponse($curl_out, __FUNCTION__);
+        $response = $this->isValidResponse($curl_out, __FUNCTION__);
+        $this->postData['action']     = 'getUrl';
+        $this->postData['postFields'] = $postFields;
+        $this->postData['response']   = $response;
+        return $response;
     }
 
     /**
@@ -165,7 +180,11 @@ class AmazonApiMonitoring
         $postFields .= 'url='.$this->config['domain'].'&';
         $postFields .= 'create_config_file='.$this->config['create_config_file'];
         $curl_out = $this->curlPostRequst($this->config['live_actions']['createInstance'], $postFields);
-        return $this->isValidResponse($curl_out, __FUNCTION__);
+        $response = $this->isValidResponse($curl_out, __FUNCTION__);
+        $this->postData['action']     = 'createInstance';
+        $this->postData['postFields'] = $postFields;
+        $this->postData['response']   = $response;
+        return $response;
     }
 
     /**
@@ -182,7 +201,11 @@ class AmazonApiMonitoring
         $postFields .= 'protocol='.      $this->config['protocol'].'&';
         $postFields .= 'instance_count='.$this->config['instance_count'];
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['getInstance'], $postFields);
-        return $this->isValidResponse($curl_out,__FUNCTION__);
+        $response = $this->isValidResponse($curl_out,__FUNCTION__);
+        $this->postData['action']     = 'getInstance';
+        $this->postData['postFields'] = $postFields;
+        $this->postData['response']   = $response;
+        return $response;
     }
 
     /**
@@ -205,6 +228,9 @@ class AmazonApiMonitoring
         {
             $curl_out       = $this->curlPostRequst($url, $postFields);
             $valid_response = $this->isValidResponse($curl_out,__FUNCTION__);
+            $this->postData['action']     = 'getSpeed';
+            $this->postData['postFields'] = $postFields;
+            $this->postData['response']   = $valid_response;
             if($valid_response['code'])
             {
                 $arr [] = $valid_response['neustar_id'].'/'.$valid_response['sanfrancisco_id'];
@@ -225,7 +251,10 @@ class AmazonApiMonitoring
             if (!$getSpeedByLoc['code'])
             {
                 $this->message = $getSpeedByLoc['message'];
-                dp($this->sendMail('getSpeedByLocation'),false);
+                dp($this->sendMail('getSpeedByLocation',  $this->postData),false);
+            }else{
+                $this->sendMail('getSpeedByLocation',  $this->postData);
+                echo $getSpeedByLoc['message'];
             }
 
             $valid_response['speed_origine']                = $getSpeedByLoc['speed_origine'];
@@ -251,7 +280,9 @@ class AmazonApiMonitoring
             $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
             $validRequst = $this->isValidResponse($curl_out,'getSpeedByLocation');
-            
+            $this->postData['action']     = 'getSpeedByLocation';
+            $this->postData['postFields'] = $postFields;
+            $this->postData['response']   = $validRequst;
             if($validRequst['code'])
             {
                 $no_valid_speed = $this->config['no_valid_speed'];
@@ -309,7 +340,11 @@ class AmazonApiMonitoring
         $postFields .= 'neustar_location_id_origine='.   $speedData['neustar_location_id_origine'];
         
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedDetails'], $postFields);
-        return $this->isValidResponse($curl_out,__FUNCTION__);
+        $response = $this->isValidResponse($curl_out,__FUNCTION__);
+        $this->postData['action']     = 'getSpeedDetails';
+        $this->postData['postFields'] = $postFields;
+        $this->postData['response']   = $response;
+        return $response;
     }
 
     /**
@@ -329,7 +364,11 @@ class AmazonApiMonitoring
         $postFields .= 'url='.                              $this->config['domain'].'&';
         
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['displayReport'], $postFields);
-        return $this->isValidResponse($curl_out,__FUNCTION__);
+        $response =  $this->isValidResponse($curl_out,__FUNCTION__);
+        $this->postData['action']     = 'displayReport';
+        $this->postData['postFields'] = $postFields;
+        $this->postData['response']   = $response;
+        return $response;
     }
 
     /**
@@ -391,21 +430,52 @@ class AmazonApiMonitoring
      * 
      * @return boolean
      */
-    private function sendMail($name)
+    private function sendMail($name, array $postData = [])
     {
-        if(!$this->message && empty($this->message))
-            dp('Somthing wet wrong , message is missing');
-        
+        $this->postData = [];
         $logPath = $this->config['wornings_log_path'];
+        $log = new Logger($name);
+        if(empty($postData))
+        {
+            $log->pushHandler(new StreamHandler($logPath, Logger::NOTICE));
+            $notice = $this->config['code_error'].__LINE__;
+            $log->notice($notice);
+            dp($notice);
+        }
+
+        
+
+        if(isset($postData['response']) && isset($postData['response']['code']))
+        {
+            if($postData['response']['code'])
+            {
+                $log->pushHandler(new StreamHandler($logPath, Logger::INFO));
+                $log->info('Success',$postData);
+                return true;
+            }
+        }else{
+            $log->pushHandler(new StreamHandler($logPath, Logger::NOTICE));
+            $notice = $this->config['code_error'].__LINE__;
+            $log->notice($notice);
+            dp($notice);
+        }
+        
+        if(!$this->message && empty($this->message)){
+            $log->pushHandler(new StreamHandler($logPath, Logger::NOTICE));
+            $notice = $this->config['missing_message_error'].__LINE__;
+            $log->notice($notice);
+            dp($notice);
+        }
+        
         // create a log channel
         $log = new Logger($name);
         $log->pushHandler(new StreamHandler($logPath, Logger::WARNING));
 
         // add records to the log
-        $log->warning($this->message);
+        $log->warning($this->message, $postData);
 
         $to      = $this->config['to_email'];
-        $subject = $this->config['email_subjct'];
+        $subject = $this->config['test_email_subjct'];
         $headers = 'From: '. $this->config['from_email'];
 
         if( !mail( $to, $subject, $this->message, $headers ) ){
@@ -414,8 +484,8 @@ class AmazonApiMonitoring
 
             // add records to the log
             $mail->warning(error_get_last());
-            return 'E-mail not sent :'.error_get_last();
+            echo 'E-mail not sent :'.error_get_last().PHP_EOL;
         }
-        return 'Error into '.$name.',Log fil is '.realpath($logPath);
+        echo 'Error into '.$name.',Log fil is '.realpath($logPath).PHP_EOL;
     }
 }

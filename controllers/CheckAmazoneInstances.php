@@ -15,6 +15,14 @@ class CheckAmazoneInstances
      */
     public function __construct($config) {
         $this->config = $config;
+        if(!file_exists($this->config['monitor_json_file'])){
+            $fp = fopen($this->config['monitor_json_file'], 'w');
+            fclose($fp);
+        }
+        if(!file_exists($this->config['monitor_log'])){
+            $fp = fopen($this->config['monitor_log'], 'w');
+            fclose($fp);
+        }
     }
 
     /**
@@ -136,6 +144,8 @@ class CheckAmazoneInstances
      */
     private function notify(array $notices)
     {
+        if(empty($notices))
+            return;
         $message = '';
         $name = 'Runned instances';
         $duration = $this->config['runned_duration'];
@@ -165,7 +175,7 @@ class CheckAmazoneInstances
         $log->warning($message);
 
         $to      = $this->config['to_email'];
-        $subject = $this->config['email_subjct'];
+        $subject = $this->config['monitor_email_subjct'];
         $headers = 'From: '. $this->config['from_email'];
 
         if( !mail( $to, $subject, $message, $headers ) ){

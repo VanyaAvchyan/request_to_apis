@@ -1,5 +1,4 @@
 <?php
-
 include __DIR__.'/vendor/autoload.php';
 /**
  * Dumping result and exiting kode
@@ -8,10 +7,10 @@ include __DIR__.'/vendor/autoload.php';
  * @param boolan $type if true xecute print_r else var_dump
  * @return var_dump | print_r
  */
-function dp($data, $type = true){
+function dp($data, $type = true)
+{
     echo '<pre>';
     if($type){
-
         print_r($data);
     }
     else{
@@ -35,12 +34,14 @@ function autoLoader($name)
         include 'controllers/'.$name.'.php';
     }
 }
+
 /**
  * Register given function as __autoload() implementation
  */
 spl_autoload_register('autoLoader');
 
-if($type){
+if($type)
+{
     switch ($type){
         case 'test' :
             $newObj = (new AmazonApiMonitoring(Helper::dataConfiguration()))->run();break;

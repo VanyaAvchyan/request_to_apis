@@ -24,8 +24,12 @@ return [
     'incorrect_url'         => 'does not respond to a request. Hader code ',
     'sero_speed_msg'        => 'All indicators zero speed. Line ',
     'neeustar_error_msg'    => 'Something wet wrong, neuStarId is not defined. Line ',
+    'code_error'            => 'The code does not work correctly.Line ',
+    'success_message'       => 'Everything is ok.File name is ',
+    'missing_message_error' => 'Somthing wet wrong , message is missing. Line ',
     'not_valid_respons_msg' => ' return Not valid response',
-    'email_subjct'          => 'Cron returns an error',
+    'test_email_subjct'     => 'Cron <<test>> returns an error',
+    'monitor_email_subjct'  => 'Cron <<monitor>> returns an error',
     'live_actions'          => [
         'getUrl'             => 'http://deploy.aiscaler.com/geturl',
         'createInstance'      => 'http://deploy.aiscaler.com/createinstance',
