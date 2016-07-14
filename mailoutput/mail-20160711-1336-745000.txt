@@ -1,5 +1,0 @@
-To: admin@test.com
-Subject: Cron returns an error
-From: cron@test.com
-
-All indicators zero speed. Line 280 [{"speed_sanfrancisco":"0.00","speed_singapore":"0.00","speed_dublin":"0.00","speed_washingtondc":"0.00","code":1,"message":"Speed Found"} ]

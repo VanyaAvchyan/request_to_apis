@@ -31,7 +31,7 @@ return [
     'test_email_subjct'     => 'Cron <<test>> returns an error',
     'monitor_email_subjct'  => 'Cron <<monitor>> returns an error',
     'live_actions'          => [
-        'getUrl'             => 'http://deploy.aiscaler.com/geturl',
+        'getUrl'              => 'http://deploy.aiscaler.com/geturl',
         'createInstance'      => 'http://deploy.aiscaler.com/createinstance',
         'getSpeed'            => 'http://deploy.aiscaler.com/getspeed',
         'getInstance'         => 'http://deploy.aiscaler.com/getinstance',

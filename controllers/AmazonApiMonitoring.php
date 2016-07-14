@@ -432,7 +432,6 @@ class AmazonApiMonitoring
      */
     private function sendMail($name, array $postData = [])
     {
-        $this->postData = [];
         $logPath = $this->config['wornings_log_path'];
         $log = new Logger($name);
         if(empty($postData))
@@ -466,7 +465,7 @@ class AmazonApiMonitoring
             $log->notice($notice);
             dp($notice);
         }
-        
+
         // create a log channel
         $log = new Logger($name);
         $log->pushHandler(new StreamHandler($logPath, Logger::WARNING));
@@ -484,8 +483,8 @@ class AmazonApiMonitoring
 
             // add records to the log
             $mail->warning(error_get_last());
-            echo 'E-mail not sent :'.error_get_last().PHP_EOL;
+            return 'E-mail not sent :'.error_get_last().PHP_EOL;
         }
-        echo 'Error into '.$name.',Log fil is '.realpath($logPath).PHP_EOL;
+        return 'Error into '.$name.',Log fil is '.realpath($logPath).PHP_EOL;
     }
 }

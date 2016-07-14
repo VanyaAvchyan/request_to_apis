@@ -1,6 +1,7 @@
 nbproject
 .idea/
 vendor/
+mailoutput/
 config/locations.ini
 log.txt
-Documntation.txt
+monitorLog.txt
