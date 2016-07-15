@@ -98,7 +98,7 @@ class CheckAmazoneInstances
                     if($instance['State']['Name'] == 'running'){
                         $this->runnedInstances['state']           = $instance['State']['Name'];
                         $this->runnedInstances['instanceId']      = $instance['InstanceId'];
-                        $this->runnedInstances['region']          = 'us-east-1';
+                        $this->runnedInstances['region']          = $region;
                         $this->runnedInstances['time']            = time();
                         $this->runnedInstances['imageId']         = $instance['ImageId'];
                         $this->runnedInstances['privateDnsName']  = $instance['PrivateDnsName'];
@@ -107,6 +107,8 @@ class CheckAmazoneInstances
                         $arr[] = $this->runnedInstances;
                     }
                     echo '============================'. PHP_EOL;
+                    echo '<br>';
+                    echo '---> Region: ' . $region . PHP_EOL;
                     echo '<br>';
                     echo '---> State: ' . $instance['State']['Name'] . PHP_EOL;
                     echo '<br>';
@@ -155,6 +157,7 @@ class CheckAmazoneInstances
             $message .= '['. PHP_EOL;
             $message .= 'It is exceeded for more than '.($notice['duration']-$duration).' seconds'.PHP_EOL;
             $message .= '---> Instance ID: '.$notice['instanceId'].PHP_EOL;
+            $message .= '---> Region: '.$notice['region'].PHP_EOL;
             $message .= '---> State: '.$notice['state'].PHP_EOL;
             $message .= '---> Image ID: '.$notice['imageId'].PHP_EOL;
             $message .= '---> Private Dns Name: '.$notice['privateDnsName'].PHP_EOL;

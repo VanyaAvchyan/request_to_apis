@@ -27,6 +27,7 @@ class AmazonApiMonitoring
     {
         set_time_limit(0);
         $this->config = $config;
+        $this->message .= 'Rgion'.$this->config['region_code'].PHP_EOL;
     }
 
     /**
@@ -49,9 +50,9 @@ class AmazonApiMonitoring
          * Else output success message         * 
          */
         $getUrl = $this->getUrl();
+        $this->message .= $getUrl['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
         if(!$getUrl['code'])
         {
-            $this->message = $getUrl['message'];
             dp($this->sendMail('getUrl',$this->postData),false);
         }
         else{
@@ -66,9 +67,9 @@ class AmazonApiMonitoring
          * Else output success message         * 
          */
         $createdInstance = $this->createInstance();
+        $this->message .= $createdInstance['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
         if(!$createdInstance['code'])
         {
-            $this->message = $createdInstance['message'];
             dp($this->sendMail('createInstance',$this->postData),false);
         }
         else{
@@ -83,9 +84,9 @@ class AmazonApiMonitoring
          * Else output success message         * 
          */
         $speed = $this->getSpeed();
+        $this->message .= $speed['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
         if(!$speed['code'])
         {
-            $this->message = $speed['message'];
             dp($this->sendMail('getSpeed',$this->postData),false);
         }
         else{
@@ -100,9 +101,9 @@ class AmazonApiMonitoring
          * Else output success message         * 
          */
         $getInst = $this->getInstance($createdInstance['instanceId']);
+        $this->message .= $getInst['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
         if(!$getInst['code'])
         {
-            $this->message = $getInst['message'];
             dp($this->sendMail('getInstance', $this->postData),false);
         }
         else
@@ -118,9 +119,9 @@ class AmazonApiMonitoring
          * Else output success message         * 
          */
         $speedDetails = $this->getSpeedDetails($speed);
+        $this->message .= $speedDetails['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
         if(!$speedDetails['code'])
         {
-            $this->message = $speedDetails['message'] ;
             dp($this->sendMail('getSpeedDetails', $this->postData),false);
         }
         else{
@@ -135,9 +136,9 @@ class AmazonApiMonitoring
          * Else output success message         * 
          */
         $displayReport = $this->displayReport($speedDetails);
+        $this->message .= $displayReport['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
         if(!$displayReport['code'])
         {
-            $this->message = $displayReport['message'];
             dp($this->sendMail('displayReport', $this->postData),false);
         }
         else{
@@ -247,10 +248,9 @@ class AmazonApiMonitoring
         if( count($arr) > 1 )
         {
             $getSpeedByLoc = $this->getSpeedByLocation($valid_response['neustar_id']);
-            
+            $this->message .= $getSpeedByLoc['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
             if (!$getSpeedByLoc['code'])
             {
-                $this->message = $getSpeedByLoc['message'];
                 dp($this->sendMail('getSpeedByLocation',  $this->postData),false);
             }else{
                 $this->sendMail('getSpeedByLocation',  $this->postData);
@@ -442,8 +442,6 @@ class AmazonApiMonitoring
             dp($notice);
         }
 
-        
-
         if(isset($postData['response']) && isset($postData['response']['code']))
         {
             if($postData['response']['code'])
@@ -486,5 +484,10 @@ class AmazonApiMonitoring
             return 'E-mail not sent :'.error_get_last().PHP_EOL;
         }
         return 'Error into '.$name.',Log fil is '.realpath($logPath).PHP_EOL;
+    }
+    
+    private function postFieldsToStr($postData)
+    {
+        return ' [Rgion->'.$this->config['region_code'].'] [Request -> '.$postData['postFields'].'] [Response -> '.json_encode($postData['response']).']';
     }
 }
