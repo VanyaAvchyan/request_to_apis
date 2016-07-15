@@ -485,7 +485,13 @@ class AmazonApiMonitoring
         }
         return 'Error into '.$name.',Log fil is '.realpath($logPath).PHP_EOL;
     }
-    
+
+    /**
+     * Getting readable construction of the $postData
+     * 
+     * @param array $postData - contains respons and requst data
+     * @return String
+     */
     private function postFieldsToStr($postData)
     {
         return ' [Rgion->'.$this->config['region_code'].'] [Request -> '.$postData['postFields'].'] [Response -> '.json_encode($postData['response']).']';
