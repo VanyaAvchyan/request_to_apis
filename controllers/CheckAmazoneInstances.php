@@ -72,8 +72,6 @@ class CheckAmazoneInstances
                                     $sendMail = true;
                                 }
                             }
-                        }else{
-                            $middleRunnedInstances[$key][$oKey] = $runnedInstances[$key][$oKey];
                         }
                     }
                 }
