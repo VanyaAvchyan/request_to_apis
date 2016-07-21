@@ -40,7 +40,6 @@ class CheckAmazoneInstances
 
         $notice = [];
         $runnedInstances = [];
-        $middleRunnedInstances = [];
         $sendMail = false;
 
         foreach ($this->config['regions'] as $region)
@@ -51,7 +50,6 @@ class CheckAmazoneInstances
 
         if(!empty($runnedInstances))
         {
-            $middleRunnedInstances = $runnedInstances;
             foreach ($oldrunnedInstances as $key => $oldrunnedInstance)
             {
                 if(is_array($oldrunnedInstance) && isset($runnedInstances[$key]))
@@ -61,8 +59,8 @@ class CheckAmazoneInstances
                         $instance = (array)$instance;
                         if(isset($runnedInstances[$key][$oKey]))
                         {
-                            $middleRunnedInstances[$key][$oKey] = $instance;
                             $newRunnedInstance = $runnedInstances[$key][$oKey];
+                            $runnedInstances[$key][$oKey] = $instance;
                             if($instance['instanceId'] == $newRunnedInstance['instanceId'])
                             {
                                 if(($duration = $newRunnedInstance['time'] - $instance['time']) >= $this->config['runned_duration'])
@@ -77,9 +75,9 @@ class CheckAmazoneInstances
                 }
             }
         }
-        if(!empty($middleRunnedInstances))
+        if(!empty($runnedInstances))
         {
-            $runnedInstancesJson = json_encode($middleRunnedInstances);
+            $runnedInstancesJson = json_encode($runnedInstances);
             file_put_contents($this->config['monitor_json_file'], $runnedInstancesJson);
             echo $this->config['monitor_notice_msg'].PHP_EOL;
             $this->notify($notice, $sendMail);
