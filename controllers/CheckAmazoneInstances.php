@@ -13,7 +13,8 @@ class CheckAmazoneInstances
      * @param type $config
      * $return void
      */
-    public function __construct($config) {
+    public function __construct($config)
+    {
         $this->config = $config;
         if(!file_exists($this->config['monitor_json_file'])){
             $fp = fopen($this->config['monitor_json_file'], 'w');
@@ -42,24 +43,28 @@ class CheckAmazoneInstances
 
         foreach ($this->config['regions'] as $region)
         {
-            $runnedInstances[] = $this->getRunnedInstances($region);
+            if(!empty($this->getRunnedInstances($region)))
+                $runnedInstances[] = $this->getRunnedInstances($region);
         }
-        foreach ($json as $key => $rInstances)
+        if(!empty($runnedInstances))
         {
-            if(is_array($rInstances) && isset($runnedInstances[$key]))
+            foreach ($json as $key => $rInstances)
             {
-                foreach ($rInstances as $rKey=>$nstance)
+                if(is_array($rInstances) && isset($runnedInstances[$key]))
                 {
-                    $nstance = (array)$nstance;
-                    if(isset($runnedInstances[$key][$rKey]))
+                    foreach ($rInstances as $rKey=>$nstance)
                     {
-                        $newRunnedInstance = $runnedInstances[$key][$rKey];
-                        if($nstance['instanceId'] == $newRunnedInstance['instanceId'])
+                        $nstance = (array)$nstance;
+                        if(isset($runnedInstances[$key][$rKey]))
                         {
-                            if(($duration = $newRunnedInstance['time'] - $nstance['time']) >= $this->config['runned_duration'])
+                            $newRunnedInstance = $runnedInstances[$key][$rKey];
+                            if($nstance['instanceId'] == $newRunnedInstance['instanceId'])
                             {
-                                $newRunnedInstance['duration'] = $duration;
-                                $notice[$newRunnedInstance['instanceId']] = $newRunnedInstance;
+                                if(($duration = $newRunnedInstance['time'] - $nstance['time']) >= $this->config['runned_duration'])
+                                {
+                                    $newRunnedInstance['duration'] = $duration;
+                                    $notice[$newRunnedInstance['instanceId']] = $newRunnedInstance;
+                                }
                             }
                         }
                     }
@@ -68,11 +73,13 @@ class CheckAmazoneInstances
         }
         if(!empty($runnedInstances))
         {
+            
             $runnedInstancesJson = json_encode($runnedInstances);
             file_put_contents($this->config['monitor_json_file'], $runnedInstancesJson);
-            echo '1. Runned Instances saved'.PHP_EOL;
-        }
-        $this->notify($notice);
+            echo $this->config['monitor_notice_msg'].PHP_EOL;
+            $this->notify($notice);
+        }else
+            echo $this->config['monitor_success_msg'].PHP_EOL;
     }
     
     /**
@@ -83,7 +90,7 @@ class CheckAmazoneInstances
      */
     private function getRunnedInstances($region)
     {
-        $arr = [];
+        $runnedInstances = [];
         try{
             $aws = Ec2Client::factory(array(
                 'key'    => $this->config['key'],
@@ -92,49 +99,52 @@ class CheckAmazoneInstances
             ));
             $result = $aws->DescribeInstances();
             $reservations = $result['Reservations'];
+            
             foreach ($reservations as $reservation) {
                 $instances = $reservation['Instances'];
-                foreach ($instances as $instance) {
-                    if($instance['State']['Name'] == 'running'){
+                foreach ($instances as $instance)
+                {
+                    if(strpos($this->config['instance_key_name'], $instance['KeyName']) === false){
+                        continue;
+                    }
+                    if($instance['State']['Name'] == 'running')
+                    {
                         $this->runnedInstances['state']           = $instance['State']['Name'];
                         $this->runnedInstances['instanceId']      = $instance['InstanceId'];
+                        $this->runnedInstances['keyName']         = $instance['KeyName'];
                         $this->runnedInstances['region']          = $region;
                         $this->runnedInstances['time']            = time();
                         $this->runnedInstances['imageId']         = $instance['ImageId'];
                         $this->runnedInstances['privateDnsName']  = $instance['PrivateDnsName'];
                         $this->runnedInstances['instanceType']    = $instance['InstanceType'];
                         $this->runnedInstances['securityGroups']  = $instance['SecurityGroups'];
-                        $arr[] = $this->runnedInstances;
+                        $runnedInstances[] = $this->runnedInstances;
+                        
+                        echo '============================'. PHP_EOL;
+                        echo '---> Region: ' . $region . PHP_EOL;
+                        echo '---> Key Name: ' . $instance['KeyName'] . PHP_EOL;
+                        echo '---> State: ' . $instance['State']['Name'] . PHP_EOL;
+                        echo '---> Instance ID: ' . $instance['InstanceId'] . PHP_EOL;
+                        echo '---> Image ID: ' . $instance['ImageId'] . PHP_EOL;
+                        echo '---> Private Dns Name: ' . $instance['PrivateDnsName'] . PHP_EOL;
+                        echo '---> Instance Type: ' . $instance['InstanceType'] . PHP_EOL;
+                        if(isset($instance['SecurityGroups'][0]))
+                            echo '---> Security Group: ' . $instance['SecurityGroups'][0]['GroupName'] . PHP_EOL;
+                        else
+                            echo '---> Security Group: Undefined'. PHP_EOL;
+                        echo '---------------------------------------------'.PHP_EOL;
+                        echo  PHP_EOL;
                     }
-                    echo '============================'. PHP_EOL;
-                    echo '<br>';
-                    echo '---> Region: ' . $region . PHP_EOL;
-                    echo '<br>';
-                    echo '---> State: ' . $instance['State']['Name'] . PHP_EOL;
-                    echo '<br>';
-                    echo '---> Instance ID: ' . $instance['InstanceId'] . PHP_EOL;
-                    echo '<br>';
-                    echo '---> Image ID: ' . $instance['ImageId'] . PHP_EOL;
-                    echo '<br>';
-                    echo '---> Private Dns Name: ' . $instance['PrivateDnsName'] . PHP_EOL;
-                    echo '<br>';
-                    echo '---> Instance Type: ' . $instance['InstanceType'] . PHP_EOL;
-                    echo '<br>';
-                    if(isset($instance['SecurityGroups'][0]))
-                        echo '---> Security Group: ' . $instance['SecurityGroups'][0]['GroupName'] . PHP_EOL;
-                    else
-                        echo '---> Security Group: Undefined'. PHP_EOL;
-                    echo '<br>';
-                    echo '-----------------------------------------------------------------------------------------------------';
-                    echo '<br>';
-                    echo '<br>'. PHP_EOL;
                 }
             }
-        }  catch (Exception $e)
+        }catch (\Aws\Ec2\Exception\Ec2Exception $e)
         {
-            return $arr['error'] = $e->getMessage();
+            $server = new Logger('Amazone server');
+            $server->pushHandler(new StreamHandler($this->config['monitor_log'], Logger::ERROR));
+            $server->error($e->getMessage());
+            dp('Amazone server: '.$e->getMessage());
         }
-        return $arr;
+        return $runnedInstances;
     }
     /**
      * Generate a message based on an array of $notices to send email and logging
@@ -151,11 +161,14 @@ class CheckAmazoneInstances
         $message = '';
         $name = 'Runned instances';
         $duration = $this->config['runned_duration'];
+        $message .= '['.date("Y-m-d H:i:s").' ]'.$this->config['monitor_error_msg'].PHP_EOL;
+        $message .= 'Permissible delay '.$duration.' seconds'.PHP_EOL;
         foreach ($notices as $notice)
         {
-            $message .= 'Permitted connection '.$duration.' seconds'.PHP_EOL;
-            $message .= '['. PHP_EOL;
-            $message .= 'It is exceeded for more than '.($notice['duration']-$duration).' seconds'.PHP_EOL;
+            $message .=  '======================================'.PHP_EOL;
+            $message .= 'Exceeded for more than '.($notice['duration']-$duration).' seconds'.PHP_EOL;
+            $message .= '---> Instance ID: '.$notice['instanceId'].PHP_EOL;
+            $message .= '---> Key Name: ' . $notice['keyName'] . PHP_EOL;
             $message .= '---> Instance ID: '.$notice['instanceId'].PHP_EOL;
             $message .= '---> Region: '.$notice['region'].PHP_EOL;
             $message .= '---> State: '.$notice['state'].PHP_EOL;
@@ -166,16 +179,13 @@ class CheckAmazoneInstances
                 $message .= '---> Security Group: ' . $notice['securityGroups'][0]['GroupName'] . PHP_EOL;
             else
                 $message .= '---> Security Group: Undefined'. PHP_EOL;
-            $message .= ']'. PHP_EOL;
+            $message .= '------------------------------'. PHP_EOL;
+            $message .=  PHP_EOL;
+            $message .=  PHP_EOL;
             
         }
         $logPath = $this->config['monitor_log'];
-        // create a log channel
-        $log = new Logger($name);
-        $log->pushHandler(new StreamHandler($logPath, Logger::WARNING));
-
-        // add records to the log
-        $log->warning($message);
+        Helper::safefilerewrite($logPath, $message);
 
         $to      = $this->config['to_email'];
         $subject = $this->config['monitor_email_subjct'];

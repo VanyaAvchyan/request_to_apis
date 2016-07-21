@@ -7,7 +7,7 @@ return [
     'rec_region_fullname'   => 'EU (Ireland)',
     'rec_region_name'       => 'Ireland',
     'rec_region_class_name' => 'ireland',
-    'rec_region_class_prec' => '40',
+    'rec_region_prec' => '40',
     'location'              => ['ireland'],
 ];
 ?>

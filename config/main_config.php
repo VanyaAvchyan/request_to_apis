@@ -11,11 +11,13 @@ return [
     'get_perc_by'           => '2-18 %',
     'protocol'              => 'http',
     'create_config_file'    => true,
-    'duration'              => 3*60,//seconds
-    'avarage_speed'         => 1.78,
-    'random_faster'         => 16,
+    'duration'              => 2*60,//seconds
+    'speed_origine'         => 1.45,
+    'speed'                 => 1.3,
+    'random_faster'         => 12,
     'no_valid_speed'        => 0,
     'instance_count'        => 1,
+    'sleep_time'            => 2,
     'wornings_log_path'     => __DIR__.'/../log.txt',
     'monitor_json_file'     => __DIR__.'/../config/monitor.json',
     'monitor_log'           => __DIR__.'/../monitorLog.txt',
@@ -50,5 +52,9 @@ return [
         'ap-northeast-1',
         'ap-southeast-2',
     ],
-    'runned_duration' => 60
+    'instance_key_name'      => 'deployment-',
+    'runned_duration'        => 10,
+    'monitor_success_msg'    => "Success: Don't exist running instances",
+    'monitor_notice_msg'     => "Notice: Runned Instances saved",
+    'monitor_error_msg'      => " Running instances.ERROR: ",
 ];

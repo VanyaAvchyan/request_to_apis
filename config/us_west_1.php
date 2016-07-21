@@ -7,7 +7,7 @@ return [
     'rec_region_fullname'   => 'US West (N. California)',
     'rec_region_name'       => 'N. California',
     'rec_region_class_name' => 'california',
-    'rec_region_class_prec' => '40',
+    'rec_region_prec' => '40',
     'location'              => ['sanfrancisco'],
 ];
 ?>

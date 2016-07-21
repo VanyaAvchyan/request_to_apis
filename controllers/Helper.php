@@ -87,8 +87,9 @@ class Helper
      * @param string $dataToSave
      * @return void
      */
-    public static function safefilerewrite($fileName, $dataToSave)
-    {    if ($fp = fopen($fileName, 'w'))
+    public static function safefilerewrite($fileName, $dataToSave, $mode = 'w')
+    {    
+        if ($fp = fopen($fileName, $mode))
         {
             $startTime = microtime(true);
             do

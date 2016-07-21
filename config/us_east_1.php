@@ -7,7 +7,7 @@ return [
     'rec_region_fullname'   => 'US East (N. Virginia)',
     'rec_region_name'       => 'N. Virginia',
     'rec_region_class_name' => 'virginia',
-    'rec_region_class_prec' => '40',
+    'rec_region_prec' => '40',
     'location'              => ['sanfrancisco'],
 ];
 ?>

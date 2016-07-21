@@ -16,7 +16,12 @@ class AmazonApiMonitoring
     /**
      * @var array $postData contains  all post data wich snded before success or error
      */
-    private $postData = [];
+    private $input = [];
+    
+    /**
+     * @var array $postData contains  all post data wich snded before success or error
+     */
+    private $speedData = [];
 
     /**
      * Initialaizing custom properties
@@ -27,130 +32,51 @@ class AmazonApiMonitoring
     {
         set_time_limit(0);
         $this->config = $config;
-        $this->message .= 'Rgion'.$this->config['region_code'].PHP_EOL;
     }
 
     /**
-     * This method is main which run index.php 
-     * Creating amazon instances with CURL 
-     * Get speed with CURL 
-     * Getting instances with CURL 
-     * Getting speed by location id
-     * Getting speed Details
-     * If one method returns code = 0 Sending Message to Email with notice
-     *
+     * Default action
+     * Call getUrl private mthod
+     * 
      * @return void
      */
     public function run()
     {
-        /**
-         * Call getUrl private method and check returned data
-         * If returned data column code == 0, 
-         * code stops working and calling sendMail private method.
-         * Else output success message         * 
-         */
-        $getUrl = $this->getUrl();
-        $this->message .= $getUrl['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
-        if(!$getUrl['code'])
-        {
-            dp($this->sendMail('getUrl',$this->postData),false);
-        }
-        else{
-            $this->sendMail('getUrl',  $this->postData);
-            echo $getUrl['message'].PHP_EOL;
-        }
-
-        /**
-         * Call createInstance private method and check returned data
-         * If returned data column code == 0, 
-         * code stops working and calling sendMail private method.
-         * Else output success message         * 
-         */
-        $createdInstance = $this->createInstance();
-        $this->message .= $createdInstance['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
-        if(!$createdInstance['code'])
-        {
-            dp($this->sendMail('createInstance',$this->postData),false);
-        }
-        else{
-            $this->sendMail('createInstance',$this->postData);
-            echo $createdInstance['message'].PHP_EOL;
-        }
+        $getUrlData = $this->getUrl();
+        if(!$this->checkResponse('getUrl', $getUrlData))
+            exit;
         
-        /**
-         * Call getSpeed private method and check returned data
-         * If returned data column code == 0, 
-         * code stops working and calling sendMail private method.
-         * Else output success message         * 
-         */
-        $speed = $this->getSpeed();
-        $this->message .= $speed['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
-        if(!$speed['code'])
-        {
-            dp($this->sendMail('getSpeed',$this->postData),false);
-        }
-        else{
-            $this->sendMail('getSpeed',$this->postData);
-            echo $speed['message'].PHP_EOL;
-        }
+        $createdInstanceData = $this->createInstance();
+        if(!($createdInstanceData = $this->checkResponse('createInstance', $createdInstanceData)))
+            exit;
         
-        /**
-         * Call getSpeed private method and check returned data
-         * If returned data column code == 0, 
-         * code stops working and calling sendMail private method.
-         * Else output success message         * 
-         */
-        $getInst = $this->getInstance($createdInstance['instanceId']);
-        $this->message .= $getInst['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
-        if(!$getInst['code'])
-        {
-            dp($this->sendMail('getInstance', $this->postData),false);
-        }
-        else
-        {
-            $this->sendMail('getInstance', $this->postData);
-            echo $getInst['message'].PHP_EOL;
-        }
+        $getSpeedData = $this->getSpeed();
+        if(!($getSpeedOriginalData = $this->checkResponse('getSpeed', $getSpeedData)))
+            exit;
+        $speed['neustar_location_id_origine'] = $getSpeedOriginalData['neustar_id'].'/'.$getSpeedOriginalData['sanfrancisco_id'];
+        
+        $getInstanceData = $this->getInstance($createdInstanceData['instanceId']);
+        if(!($getInstanceData = $this->checkResponse('getInstance', $getInstanceData)))
+            exit;
 
-        /**
-         * Call getSpeedDetails private method and check returned data
-         * If returned data column code == 0, 
-         * code stops working and calling sendMail private method.
-         * Else output success message         * 
-         */
-        $speedDetails = $this->getSpeedDetails($speed);
-        $this->message .= $speedDetails['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
-        if(!$speedDetails['code'])
-        {
-            dp($this->sendMail('getSpeedDetails', $this->postData),false);
-        }
-        else{
-            $this->sendMail('getSpeedDetails', $this->postData);
-            echo $speedDetails['message'].PHP_EOL;
-        }
- 
-        /**
-         * Call displayReport private method and check returned data
-         * If returned data column code == 0, 
-         * code stops working and calling sendMail private method.
-         * Else output success message         * 
-         */
-        $displayReport = $this->displayReport($speedDetails);
-        $this->message .= $displayReport['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
-        if(!$displayReport['code'])
-        {
-            dp($this->sendMail('displayReport', $this->postData),false);
-        }
-        else{
-            $this->sendMail('displayReport', $this->postData);
-            echo $displayReport['message'].PHP_EOL;
-        }
+        $getSpeedData = $this->getSpeed($getInstanceData['PublicDnsName']);
+        if(!($getSpeedData = $this->checkResponse('getSpeed', $getSpeedData)))
+            exit;
+        $speed['neustar_location_id'] = $getSpeedData['neustar_id'].'/'.$getSpeedData['sanfrancisco_id'];
+        
+        $getSpeedByLocationData = $this->getSpeedByLocation($getSpeedData['neustar_id']);
+        if(!$this->checkResponse('getSpeedByLocation', json_encode($getSpeedByLocationData)))
+            exit;
 
-        /**
-         * After this all displaing success message
-         */
-        $report = $this->config['success_message'].$displayReport['report_file_name'];
-        dp($report);
+        $getSpeedDetailsData = $this->getSpeedDetails($speed);
+        if(!($getSpeedDetailsData = $this->checkResponse('getSpeedDetails', $getSpeedDetailsData)))
+            exit;
+
+        $displayReport = $this->displayReport($getSpeedDetailsData['waterfall_html']);
+        if(!$this->checkResponse('displayReport', $displayReport))
+            exit;
+
+        $this->callSuccess();
     }
 
     /**
@@ -162,13 +88,9 @@ class AmazonApiMonitoring
     {
         $postFields  = 'url='.$this->config['url'];
         $curl_out = $this->curlPostRequst( $this->config['live_actions']['getUrl'], $postFields);
-        $response = $this->isValidResponse($curl_out, __FUNCTION__);
-        $this->postData['action']     = 'getUrl';
-        $this->postData['postFields'] = $postFields;
-        $this->postData['response']   = $response;
-        return $response;
+        return $curl_out;
     }
-
+    
     /**
      * Sending CURL to create instances
      * 
@@ -181,13 +103,25 @@ class AmazonApiMonitoring
         $postFields .= 'url='.$this->config['domain'].'&';
         $postFields .= 'create_config_file='.$this->config['create_config_file'];
         $curl_out = $this->curlPostRequst($this->config['live_actions']['createInstance'], $postFields);
-        $response = $this->isValidResponse($curl_out, __FUNCTION__);
-        $this->postData['action']     = 'createInstance';
-        $this->postData['postFields'] = $postFields;
-        $this->postData['response']   = $response;
-        return $response;
+        return $curl_out;
     }
+    /**
+     * Sending CURL to check speed
+     * 
+     * @return array
+     */
+    private function getSpeed($public_dns = false)
+    {
+        $postFields  = 'website='.((!$public_dns)?$this->config['domain']:$public_dns).'&';
+        $postFields .= 'region_code=origine_website&';
+        $postFields .= 'init_url='.$this->config['init_url'].'&';
+        $postFields .= 'url='.$this->config['domain'].'&';
+        $postFields .= 'public_dns='.((!$public_dns)?'':$public_dns);
+        $url = $this->config['live_actions']['getSpeed'];
 
+        $curl_out = $this->curlPostRequst($url, $postFields);
+        return $curl_out;
+    }
     /**
      * Sending CURL to get instance
      * 
@@ -202,68 +136,7 @@ class AmazonApiMonitoring
         $postFields .= 'protocol='.      $this->config['protocol'].'&';
         $postFields .= 'instance_count='.$this->config['instance_count'];
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['getInstance'], $postFields);
-        $response = $this->isValidResponse($curl_out,__FUNCTION__);
-        $this->postData['action']     = 'getInstance';
-        $this->postData['postFields'] = $postFields;
-        $this->postData['response']   = $response;
-        return $response;
-    }
-
-    /**
-     * Sending CURL to check speed
-     * 
-     * @return array
-     */
-    private function getSpeed()
-    {
-        $start_time = time();
-        $arr = [];
-        $postFields  = 'website='.$this->config['domain'].'&';
-        $postFields .= 'region_code=origine_website&';
-        $postFields .= 'init_url='.$this->config['init_url'].'&';
-        $postFields .= 'url='.$this->config['domain'].'&';
-        $postFields .= 'public_dns=';
-        $url = $this->config['live_actions']['getSpeed'];
-
-        for( $i = 1; $i <= 2; $i++ )
-        {
-            $curl_out       = $this->curlPostRequst($url, $postFields);
-            $valid_response = $this->isValidResponse($curl_out,__FUNCTION__);
-            $this->postData['action']     = 'getSpeed';
-            $this->postData['postFields'] = $postFields;
-            $this->postData['response']   = $valid_response;
-            if($valid_response['code'])
-            {
-                $arr [] = $valid_response['neustar_id'].'/'.$valid_response['sanfrancisco_id'];
-            }  else {
-                $i--;
-            }
-            $duration = time() - $start_time;
-            if($duration >= $this->config['duration'])
-                return [
-                    'code'    => 0,
-                    'message' => $this->config['wrong_duration'].$this->config['duration'].' seconds.Action '.__FUNCTION__
-                ];
-        }
-        if( count($arr) > 1 )
-        {
-            $getSpeedByLoc = $this->getSpeedByLocation($valid_response['neustar_id']);
-            $this->message .= $getSpeedByLoc['message'].$this->postFieldsToStr($this->postData).PHP_EOL;
-            if (!$getSpeedByLoc['code'])
-            {
-                dp($this->sendMail('getSpeedByLocation',  $this->postData),false);
-            }else{
-                $this->sendMail('getSpeedByLocation',  $this->postData);
-                echo $getSpeedByLoc['message'];
-            }
-
-            $valid_response['speed_origine']                = $getSpeedByLoc['speed_origine'];
-            $valid_response['speed']                        = $getSpeedByLoc['speed'];
-            $valid_response['random_faster']                = $getSpeedByLoc['random_faster'];
-            $valid_response['neustar_location_id_origine']  = $arr[0];
-            $valid_response['neustar_location_id']          = $arr[1];
-        }
-        return $valid_response;
+        return $curl_out;
     }
 
     /**
@@ -279,24 +152,19 @@ class AmazonApiMonitoring
         {
             $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
-            $validRequst = $this->isValidResponse($curl_out,'getSpeedByLocation');
-            $this->postData['action']     = 'getSpeedByLocation';
-            $this->postData['postFields'] = $postFields;
-            $this->postData['response']   = $validRequst;
-            if($validRequst['code'])
+            $validResponse = $this->isValidResponse($curl_out,'getSpeedByLocation');
+            if($validResponse['code'])
             {
                 $no_valid_speed = $this->config['no_valid_speed'];
-                if(!isset($validRequst['speed_sanfrancisco']) && !isset($validRequst['speed_singapore']) && !isset($validRequst['speed_dublin']) && !isset($validRequst['speed_washingtondc']) ){
+                if(!isset($validResponse['speed_sanfrancisco']) && !isset($validResponse['speed_singapore']) && !isset($validResponse['speed_dublin']) && !isset($validResponse['speed_washingtondc']) ){
                     return [
                         'code'    => 0,
                         'message' => $this->config['wrong_code'].__LINE__
                     ];
                 }
-                if($validRequst['speed_sanfrancisco'] > $no_valid_speed && $validRequst['speed_singapore'] > $no_valid_speed && $validRequst['speed_dublin'] > $no_valid_speed && $validRequst['speed_washingtondc'] > $no_valid_speed){
-                    $validRequst['speed_origine'] = $validRequst['speed_sanfrancisco'];
-                    $validRequst['speed'] = $this->config['avarage_speed'];
-                    $validRequst['random_faster'] = $this->config['random_faster'];
-                    return $validRequst;
+                if($validResponse['speed_sanfrancisco'] > $no_valid_speed && $validResponse['speed_singapore'] > $no_valid_speed && $validResponse['speed_dublin'] > $no_valid_speed && $validResponse['speed_washingtondc'] > $no_valid_speed)
+                {
+                    return $validResponse;
                 }
                 $location_duration = time() - $location_start_time;
                 if( $location_duration >= $this->config['duration'] )
@@ -304,47 +172,35 @@ class AmazonApiMonitoring
                         'code'    => 0,
                         'message' => $this->config['wrong_duration'].$this->config['duration'].' seconds.Action getSpeedByLocation'
                     ];
+            }else{
+                return $validResponse;
             }
-            if($validRequst['code'])
-                return [
-                    'code'    => 0,
-                    'message' => $this->config['sero_speed_msg'].__LINE__. ' ['.json_encode($validRequst).' ]'
-                ];
-            return [
-                'code'    => 0,
-                'message' => $validRequst['message'].'.Line '.__LINE__. ' ['.json_encode($validRequst).' ]'
-            ];
-            
         }
         return [
             'code'    => 0,
-            'message' => $this->config['neeustar_error_msg'].__LINE__. ' ['.json_encode($validRequst).' ]'
+            'message' => $this->config['neeustar_error_msg'].__LINE__. ' ['.json_encode($validResponse).' ]'
         ];
     }
-
+    
     /**
      * Sending CURL to get speed details
      *
      * @param array $speedData
      * @return array
      */
-    private function getSpeedDetails($speedData)
+    private function getSpeedDetails($speed)
     {
         $postFields  = 'url='.                           $this->config['domain'].'&';
         $postFields .= 'region_code='.                   $this->config['region_code'].'&';
         $postFields .= 'location='.                      $this->config['location'][0].'&';
-        $postFields .= 'speed_origine='.                 $speedData['speed_origine'].'&';
-        $postFields .= 'speed='.                         $speedData['speed'].'&';
-        $postFields .= 'random_faster='.                 $speedData['random_faster'].'&';
-        $postFields .= 'neustar_location_id='.           $speedData['neustar_location_id'].'&';
-        $postFields .= 'neustar_location_id_origine='.   $speedData['neustar_location_id_origine'];
+        $postFields .= 'speed_origine='.                 $this->config['speed_origine'].'&';
+        $postFields .= 'speed='.                         $this->config['speed'].'&';
+        $postFields .= 'random_faster='.                 $this->config['random_faster'].'&';
+        $postFields .= 'neustar_location_id='.           $speed['neustar_location_id'].'&';
+        $postFields .= 'neustar_location_id_origine='.   $speed['neustar_location_id_origine'];
         
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedDetails'], $postFields);
-        $response = $this->isValidResponse($curl_out,__FUNCTION__);
-        $this->postData['action']     = 'getSpeedDetails';
-        $this->postData['postFields'] = $postFields;
-        $this->postData['response']   = $response;
-        return $response;
+        return $curl_out;
     }
 
     /**
@@ -353,9 +209,9 @@ class AmazonApiMonitoring
      * @param array $reportData
      * @return array
      */
-    private function displayReport($reportData)
+    private function displayReport($table_html)
     {
-        $postFields  = 'table_html='.                       $reportData['waterfall_html'].'&';
+        $postFields  = 'table_html='.                       $table_html.'&';
         $postFields .= 'get_perc_by='.                      $this->config['get_perc_by'].'&';
         $postFields .= 'recommanded_region[0][fullname]='.  $this->config['rec_region_fullname'].'&';
         $postFields .= 'recommanded_region[0][name]='.      $this->config['rec_region_name'].'&';
@@ -364,13 +220,40 @@ class AmazonApiMonitoring
         $postFields .= 'url='.                              $this->config['domain'].'&';
         
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['displayReport'], $postFields);
-        $response =  $this->isValidResponse($curl_out,__FUNCTION__);
-        $this->postData['action']     = 'displayReport';
-        $this->postData['postFields'] = $postFields;
-        $this->postData['response']   = $response;
-        return $response;
+        return $curl_out;
     }
+    /**
+     * Sending Curl
+     * 
+     * @param string $url
+     * @param array $postFields
+     * @return array
+     */
+    private function curlPostRequst( $url, $postFields )
+    {
+        sleep($this->config['sleep_time']);
+        $this->input = $postFields;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $server_output = curl_exec ($ch);
+        $info = curl_getinfo($ch);
+        curl_close ($ch);
+
+        if($info['http_code'] && $info['http_code']  >= 400 )
+        {
+            return [
+                'code'    => 0,
+                'message' => $url. $this->config['incorrect_url'].$info['http_code']
+            ];
+        }
+        return $server_output;
+    }
+    
     /**
      * Validation response data
      * 
@@ -396,104 +279,50 @@ class AmazonApiMonitoring
     }
 
     /**
-     * Sending Curl
-     * 
-     * @param string $url
-     * @param array $postFields
-     * @return array
+     * Check response data
      */
-    private function curlPostRequst( $url, $postFields )
+    private function checkResponse( $method, $response )
     {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $server_output = curl_exec ($ch);
-        $info = curl_getinfo($ch);
-        curl_close ($ch);
-
-        if($info['http_code'] && $info['http_code']  >= 400 )
-        {
-            return [
-                'code'    => 0,
-                'message' => $url. $this->config['incorrect_url'].$info['http_code']
-            ];
+        $response = $this->isValidResponse( $response, $method );
+        echo $response['message'].PHP_EOL;
+        $this->message .= '{'.date('Y-m-d H:i:s').'} api Function '.$method.' executed with following input output'.PHP_EOL;
+        $this->message .= 'INPUT:'.PHP_EOL;
+        $this->message .= '--->Action:'.$method.PHP_EOL;
+        $this->message .= '--->Post fields:'.$this->input.PHP_EOL;
+        if(!$response['code'])
+            $this->message .= '[ERROR] ';
+        else
+            $this->message .= '[SUCCESS] ';
+        $this->message .= 'OUTPUT:'.PHP_EOL;
+        $this->message .= '--->'.json_encode($response).PHP_EOL;
+        $this->message .= '---------------------------------'.PHP_EOL;
+        $this->message .= PHP_EOL;
+        if(!$response['code']){
+            $this->callError ();
+            return false;
         }
-        return $server_output;
-    }
-    
-    /**
-     * Send mail
-     * 
-     * @return boolean
-     */
-    private function sendMail($name, array $postData = [])
-    {
-        $logPath = $this->config['wornings_log_path'];
-        $log = new Logger($name);
-        if(empty($postData))
-        {
-            $log->pushHandler(new StreamHandler($logPath, Logger::NOTICE));
-            $notice = $this->config['code_error'].__LINE__;
-            $log->notice($notice);
-            dp($notice);
-        }
-
-        if(isset($postData['response']) && isset($postData['response']['code']))
-        {
-            if($postData['response']['code'])
-            {
-                $log->pushHandler(new StreamHandler($logPath, Logger::INFO));
-                $log->info('Success',$postData);
-                return true;
-            }
-        }else{
-            $log->pushHandler(new StreamHandler($logPath, Logger::NOTICE));
-            $notice = $this->config['code_error'].__LINE__;
-            $log->notice($notice);
-            dp($notice);
-        }
-        
-        if(!$this->message && empty($this->message)){
-            $log->pushHandler(new StreamHandler($logPath, Logger::NOTICE));
-            $notice = $this->config['missing_message_error'].__LINE__;
-            $log->notice($notice);
-            dp($notice);
-        }
-
-        // create a log channel
-        $log = new Logger($name);
-        $log->pushHandler(new StreamHandler($logPath, Logger::WARNING));
-
-        // add records to the log
-        $log->warning($this->message, $postData);
-
-        $to      = $this->config['to_email'];
-        $subject = $this->config['test_email_subjct'];
-        $headers = 'From: '. $this->config['from_email'];
-
-        if( !mail( $to, $subject, $this->message, $headers ) ){
-            $mail = new Logger('E-Mail');
-            $mail->pushHandler(new StreamHandler($logPath, Logger::WARNING));
-
-            // add records to the log
-            $mail->warning(error_get_last());
-            return 'E-mail not sent :'.error_get_last().PHP_EOL;
-        }
-        return 'Error into '.$name.',Log fil is '.realpath($logPath).PHP_EOL;
+        return $response;
     }
 
     /**
-     * Getting readable construction of the $postData
      * 
-     * @param array $postData - contains respons and requst data
-     * @return String
      */
-    private function postFieldsToStr($postData)
+    private function callSuccess()
     {
-        return ' [Rgion->'.$this->config['region_code'].'] [Request -> '.$postData['postFields'].'] [Response -> '.json_encode($postData['response']).']';
+        $message = '['.date('Y-m-d H:i:s').'] Test.SUCCESS'.PHP_EOL;
+        $message .= PHP_EOL;
+        $message .= $this->message;
+        Helper::safefilerewrite($this->config['wornings_log_path'], $message,'a+');
+    }
+
+    /**
+     * 
+     */
+    private function callError()
+    {
+        $message = '['.date('Y-m-d H:i:s').'] Test.ERROR'.PHP_EOL;
+        $message .= PHP_EOL;
+        $message .= $this->message;
+        Helper::safefilerewrite($this->config['wornings_log_path'], $message,'a+');
     }
 }

@@ -7,7 +7,7 @@ return [
     'rec_region_fullname'   => 'Asia Pacific (Singapore)',
     'rec_region_name'       => 'Singapore',
     'rec_region_class_name' => 'singapore',
-    'rec_region_class_prec' => '40',
+    'rec_region_prec' => '40',
     'location'              => ['singapore'],
 ];
 ?>

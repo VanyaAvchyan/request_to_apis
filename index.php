@@ -9,7 +9,6 @@ include __DIR__.'/vendor/autoload.php';
  */
 function dp($data, $type = true)
 {
-    echo '<pre>';
     if($type){
         print_r($data);
     }
@@ -23,6 +22,7 @@ $type = false;
 
 if(isset($argv[1]))
     $type = $argv[1];
+
 /**
      * This is a callback like __aoutoload for spl_autoload_register
  * 

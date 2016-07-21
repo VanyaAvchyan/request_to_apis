@@ -7,7 +7,7 @@ return [
     'rec_region_fullname'   => 'South America (São Paulo)',
     'rec_region_name'       => 'São Paulo',
     'rec_region_class_name' => 'sãopaulo',
-    'rec_region_class_prec' => '40',
+    'rec_region_prec' => '40',
     'location'              => ['sãopaulo'],
 ];
 ?>

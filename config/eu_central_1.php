@@ -7,7 +7,7 @@ return [
     'rec_region_fullname'   => 'EU (Frankfurt)',
     'rec_region_name'       => 'Frankfurt',
     'rec_region_class_name' => 'frankfurt',
-    'rec_region_class_prec' => '40',
+    'rec_region_prec' => '40',
     'location'              => ['frankfurt'],
 ];
 ?>

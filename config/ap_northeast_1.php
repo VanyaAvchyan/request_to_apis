@@ -7,7 +7,7 @@ return [
     'rec_region_fullname'   => 'Asia Pacific (Tokyo)',
     'rec_region_name'       => 'Tokyo',
     'rec_region_class_name' => 'tokyo',
-    'rec_region_class_prec' => '40',
+    'rec_region_prec' => '40',
     'location'              => ['tokyo'],
 ];
 ?>
