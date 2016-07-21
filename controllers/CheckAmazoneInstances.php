@@ -36,48 +36,55 @@ class CheckAmazoneInstances
     public function run()
     {
         $json = file_get_contents($this->config['monitor_json_file']);
-        $json = (array)json_decode($json);
+        $oldrunnedInstances = (array)json_decode($json);
 
         $notice = [];
         $runnedInstances = [];
+        $middleRunnedInstances = [];
+        $sendMail = false;
 
         foreach ($this->config['regions'] as $region)
         {
             if(!empty($this->getRunnedInstances($region)))
                 $runnedInstances[] = $this->getRunnedInstances($region);
         }
+
         if(!empty($runnedInstances))
         {
-            foreach ($json as $key => $rInstances)
+            $middleRunnedInstances = $runnedInstances;
+            foreach ($oldrunnedInstances as $key => $oldrunnedInstance)
             {
-                if(is_array($rInstances) && isset($runnedInstances[$key]))
+                if(is_array($oldrunnedInstance) && isset($runnedInstances[$key]))
                 {
-                    foreach ($rInstances as $rKey=>$nstance)
+                    foreach ( $oldrunnedInstance as $oKey => $instance )
                     {
-                        $nstance = (array)$nstance;
-                        if(isset($runnedInstances[$key][$rKey]))
+                        $instance = (array)$instance;
+                        if(isset($runnedInstances[$key][$oKey]))
                         {
-                            $newRunnedInstance = $runnedInstances[$key][$rKey];
-                            if($nstance['instanceId'] == $newRunnedInstance['instanceId'])
+                            $middleRunnedInstances[$key][$oKey] = $instance;
+                            $newRunnedInstance = $runnedInstances[$key][$oKey];
+                            if($instance['instanceId'] == $newRunnedInstance['instanceId'])
                             {
-                                if(($duration = $newRunnedInstance['time'] - $nstance['time']) >= $this->config['runned_duration'])
+                                if(($duration = $newRunnedInstance['time'] - $instance['time']) >= $this->config['runned_duration'])
                                 {
                                     $newRunnedInstance['duration'] = $duration;
                                     $notice[$newRunnedInstance['instanceId']] = $newRunnedInstance;
+                                    $sendMail = true;
                                 }
                             }
+                        }else{
+                            $middleRunnedInstances[$key][$oKey] = $runnedInstances[$key][$oKey];
                         }
                     }
                 }
             }
         }
-        if(!empty($runnedInstances))
+        if(!empty($middleRunnedInstances))
         {
-            
-            $runnedInstancesJson = json_encode($runnedInstances);
+            $runnedInstancesJson = json_encode($middleRunnedInstances);
             file_put_contents($this->config['monitor_json_file'], $runnedInstancesJson);
             echo $this->config['monitor_notice_msg'].PHP_EOL;
-            $this->notify($notice);
+            $this->notify($notice, $sendMail);
         }else
             echo $this->config['monitor_success_msg'].PHP_EOL;
     }
@@ -99,15 +106,15 @@ class CheckAmazoneInstances
             ));
             $result = $aws->DescribeInstances();
             $reservations = $result['Reservations'];
-            
+
             foreach ($reservations as $reservation) {
                 $instances = $reservation['Instances'];
                 foreach ($instances as $instance)
                 {
-                    if(strpos($this->config['instance_key_name'], $instance['KeyName']) === false){
+                    if(strpos( $instance['KeyName'], $this->config['instance_key_name']) === false){
                         continue;
                     }
-                    if($instance['State']['Name'] == 'running')
+                    if($instance['State']['Name'] === 'running')
                     {
                         $this->runnedInstances['state']           = $instance['State']['Name'];
                         $this->runnedInstances['instanceId']      = $instance['InstanceId'];
@@ -119,7 +126,7 @@ class CheckAmazoneInstances
                         $this->runnedInstances['instanceType']    = $instance['InstanceType'];
                         $this->runnedInstances['securityGroups']  = $instance['SecurityGroups'];
                         $runnedInstances[] = $this->runnedInstances;
-                        
+
                         echo '============================'. PHP_EOL;
                         echo '---> Region: ' . $region . PHP_EOL;
                         echo '---> Key Name: ' . $instance['KeyName'] . PHP_EOL;
@@ -154,10 +161,10 @@ class CheckAmazoneInstances
      * @param array $notices
      * @return void
      */
-    private function notify(array $notices)
+    private function notify(array $notices, $sendMail = false)
     {
         if(empty($notices))
-            return;
+            return false;
         $message = '';
         $name = 'Runned instances';
         $duration = $this->config['runned_duration'];
@@ -185,13 +192,13 @@ class CheckAmazoneInstances
             
         }
         $logPath = $this->config['monitor_log'];
-        Helper::safefilerewrite($logPath, $message);
+        Helper::safefilerewrite($logPath, $message,'a+');
 
         $to      = $this->config['to_email'];
         $subject = $this->config['monitor_email_subjct'];
         $headers = 'From: '. $this->config['from_email'];
 
-        if( !mail( $to, $subject, $message, $headers ) ){
+        if($sendMail && !mail( $to, $subject, $message, $headers ) ){
             $mail = new Logger('E-Mail');
             $mail->pushHandler(new StreamHandler($logPath, Logger::WARNING));
 
@@ -199,6 +206,6 @@ class CheckAmazoneInstances
             $mail->warning(error_get_last());
             echo 'E-mail not sent :'.error_get_last().PHP_EOL;
         }
-        echo '2. ['.$name.'] The message was formed. Log fil is '.realpath($logPath). PHP_EOL;
+        echo '['.$name.'] The message was formed. Log fil is '.realpath($logPath). PHP_EOL;
     }
 }
