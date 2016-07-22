@@ -148,10 +148,12 @@ class AmazonApiMonitoring
     private function getSpeedByLocation($neuStarId)
     {
         $location_start_time = time();
+        $message = '';
         while ($neuStarId)
         {
             $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
+            $message .= $curl_out.PHP_EOL;
             $validResponse = $this->isValidResponse($curl_out,'getSpeedByLocation');
             if($validResponse['code'])
             {
@@ -168,10 +170,13 @@ class AmazonApiMonitoring
                 }
                 $location_duration = time() - $location_start_time;
                 if( $location_duration >= $this->config['duration'] )
+                {
+                    $message .= $this->config['wrong_duration'].PHP_EOL;
                     return [
                         'code'    => 0,
-                        'message' => $this->config['wrong_duration'].$this->config['duration'].' seconds.Action getSpeedByLocation'
+                        'message' => $message
                     ];
+                }
             }else{
                 return $validResponse;
             }

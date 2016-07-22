@@ -22,7 +22,7 @@ return [
     'monitor_json_file'     => __DIR__.'/../config/monitor.json',
     'monitor_log'           => __DIR__.'/../monitorLog.txt',
     'wrong_code'            => 'Something wet wrong. Code is changed on the original site.',
-    'wrong_duration'        => 'Alowable limit of script work exceeded the allowable limit of ',
+    'wrong_duration'        => " doesn't returned expected result after {configured} amount of time",
     'incorrect_url'         => 'does not respond to a request. Hader code ',
     'sero_speed_msg'        => 'All indicators zero speed. Line ',
     'neeustar_error_msg'    => 'Something wet wrong, neuStarId is not defined. Line ',
