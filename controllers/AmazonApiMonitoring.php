@@ -331,7 +331,10 @@ class AmazonApiMonitoring
     }
 
     /**
+     * Calling when response return success
+     * Write success message into log file 
      * 
+     * @return void
      */
     private function callSuccess()
     {
@@ -342,7 +345,10 @@ class AmazonApiMonitoring
     }
 
     /**
+     * Calling when response return error 
+     * Write error message into log file
      * 
+     * @return void
      */
     private function callError()
     {
