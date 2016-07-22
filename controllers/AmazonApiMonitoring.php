@@ -149,18 +149,18 @@ class AmazonApiMonitoring
     {
         $location_start_time = time();
         $message = '';
+        $delimiter = ' {{{|}}} ';
         while ($neuStarId)
         {
             $postFields = "neustar_id=".$neuStarId;
             $curl_out   = $this->curlPostRequst($this->config['live_actions']['getSpeedByLocation'], $postFields);
-            $message .= $curl_out.PHP_EOL;
             $validResponse = $this->isValidResponse($curl_out,'getSpeedByLocation');
             if($validResponse['code'])
             {
                 $no_valid_speed = $this->config['no_valid_speed'];
                 if(!isset($validResponse['speed_sanfrancisco']) && !isset($validResponse['speed_singapore']) && !isset($validResponse['speed_dublin']) && !isset($validResponse['speed_washingtondc']) ){
-                    $message .= $curl_out.PHP_EOL;
-                    $message .= $this->config['wrong_code'].__LINE__.PHP_EOL;
+                    $message = $curl_out.$delimiter;
+                    $message .= $this->config['wrong_code'].__LINE__;
                     return [
                         'code'    => 0,
                         'message' => $message
@@ -173,7 +173,7 @@ class AmazonApiMonitoring
                 $location_duration = time() - $location_start_time;
                 if( $location_duration >= $this->config['duration'] )
                 {
-                    $message .= $this->config['wrong_duration'].PHP_EOL;
+                    $message .= $this->config['wrong_duration'].$delimiter;
                     return [
                         'code'    => 0,
                         'message' => $message
@@ -185,7 +185,7 @@ class AmazonApiMonitoring
         }
         return [
             'code'    => 0,
-            'message' => $this->config['neeustar_error_msg'].__LINE__. ' ['.json_encode($validResponse).' ]'
+            'message' => json_encode($validResponse).$delimiter.$this->config['neeustar_error_msg'].__LINE__
         ];
     }
     
@@ -238,6 +238,7 @@ class AmazonApiMonitoring
      */
     private function curlPostRequst( $url, $postFields )
     {
+        $errorMessage = '';
         sleep($this->config['sleep_time']);
         $this->input = $postFields;
         $ch = curl_init();
@@ -253,9 +254,11 @@ class AmazonApiMonitoring
 
         if($info['http_code'] && $info['http_code']  >= 400 )
         {
+            $errorMessage = $server_output.' {{{|}}} ';
+            $errorMessage .= $url.' --> ';
             return [
                 'code'    => 0,
-                'message' => $server_output.PHP_EOL.$url. $this->config['incorrect_url'].$info['http_code']
+                'message' => $errorMessage. $this->config['incorrect_url'].$info['http_code']
             ];
         }
         return $server_output;
@@ -269,21 +272,24 @@ class AmazonApiMonitoring
      */
     private function isValidResponse($response, $type)
     {
+        $errorMessage = '';
         if(is_array($response))
         {
-            $response = (string)$response;
+            $response = json_encode($response);
+            $errorMessage = $response.' {{{|}}} ';
             return [
                 'code'=>0,
-                'message' => $response.PHP_EOL.$type.$this->config['not_valid_respons_msg']
+                'message' => $errorMessage.$this->config['not_valid_respons_msg']
             ];
         }
         $output = (array)json_decode($response);
         if(!isset($output['code']) && !isset($output['message'])){
             $response = (string)$response;
+            $errorMessage = $response.' {{{|}}} ';
             return 
             [
                 'code'    => 0,
-                'message' => $response.PHP_EOL.$this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__
+                'message' => $errorMessage.$this->config['wrong_code'].'. Look at line '.__LINE__
             ];
         }
         return $output;
@@ -294,6 +300,7 @@ class AmazonApiMonitoring
      */
     private function checkResponse( $method, $response )
     {
+        $delimiter = '{{{|}}}';
         $response = $this->isValidResponse( $response, $method );
         echo $response['message'].PHP_EOL;
         $this->message .= '{'.date('Y-m-d H:i:s').'} api Function '.$method.' executed with following input output'.PHP_EOL;
@@ -305,7 +312,14 @@ class AmazonApiMonitoring
         else
             $this->message .= '[SUCCESS] ';
         $this->message .= 'OUTPUT:'.PHP_EOL;
-        $this->message .= '--->'.json_encode($response).PHP_EOL;
+        if(strpos($response['message'],$delimiter)){
+            foreach (explode($delimiter, $response['message']) as $msg)
+            {
+                $this->message .= '--->'.  trim($msg).PHP_EOL;
+            }
+        }else{
+            $this->message .= '--->'.json_encode($response).PHP_EOL;
+        }
         $this->message .= '---------------------------------'.PHP_EOL;
         $this->message .= PHP_EOL;
         if(!$response['code'])
