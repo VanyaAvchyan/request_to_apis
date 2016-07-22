@@ -255,7 +255,7 @@ class AmazonApiMonitoring
         {
             return [
                 'code'    => 0,
-                'message' => $url. $this->config['incorrect_url'].$info['http_code']
+                'message' => $server_output.PHP_EOL.$url. $this->config['incorrect_url'].$info['http_code']
             ];
         }
         return $server_output;
@@ -269,19 +269,23 @@ class AmazonApiMonitoring
      */
     private function isValidResponse($response, $type)
     {
-        if(is_array($response)){
+        if(is_array($response))
+        {
+            $response = (string)$response;
             return [
                 'code'=>0,
-                'message' => $type.$this->config['not_valid_respons_msg'].' ['.json_encode($response).']'
+                'message' => $response.PHP_EOL.$type.$this->config['not_valid_respons_msg']
             ];
         }
         $output = (array)json_decode($response);
-        if(!isset($output['code']) && !isset($output['message']))
+        if(!isset($output['code']) && !isset($output['message'])){
+            $response = (string)$response;
             return 
             [
                 'code'    => 0,
-                'message' => $this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__.' ['.$response.']'
+                'message' => $response.PHP_EOL.$this->config['wrong_code'].'Action '.$type.'. Look at line '.__LINE__
             ];
+        }
         return $output;
     }
 
@@ -304,7 +308,8 @@ class AmazonApiMonitoring
         $this->message .= '--->'.json_encode($response).PHP_EOL;
         $this->message .= '---------------------------------'.PHP_EOL;
         $this->message .= PHP_EOL;
-        if(!$response['code']){
+        if(!$response['code'])
+        {
             $this->callError ();
             return false;
         }
