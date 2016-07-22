@@ -159,9 +159,11 @@ class AmazonApiMonitoring
             {
                 $no_valid_speed = $this->config['no_valid_speed'];
                 if(!isset($validResponse['speed_sanfrancisco']) && !isset($validResponse['speed_singapore']) && !isset($validResponse['speed_dublin']) && !isset($validResponse['speed_washingtondc']) ){
+                    $message .= $curl_out.PHP_EOL;
+                    $message .= $this->config['wrong_code'].__LINE__.PHP_EOL;
                     return [
                         'code'    => 0,
-                        'message' => $this->config['wrong_code'].__LINE__
+                        'message' => $message
                     ];
                 }
                 if($validResponse['speed_sanfrancisco'] > $no_valid_speed && $validResponse['speed_singapore'] > $no_valid_speed && $validResponse['speed_dublin'] > $no_valid_speed && $validResponse['speed_washingtondc'] > $no_valid_speed)
