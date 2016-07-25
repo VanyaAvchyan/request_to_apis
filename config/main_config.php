@@ -12,6 +12,7 @@ return [
     'protocol'              => 'http',
     'create_config_file'    => true,
     'duration'              => 2*60,//seconds
+    'curl_duration_time'    => 5,//seconds
     'speed_origine'         => 1.45,
     'speed'                 => 1.3,
     'random_faster'         => 12,

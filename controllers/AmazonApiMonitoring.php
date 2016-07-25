@@ -216,7 +216,7 @@ class AmazonApiMonitoring
      * @param array $reportData
      * @return array
      */
-    private function displayReport($table_html)
+    private function displayReport( $table_html )
     {
         $postFields  = 'table_html='.                       $table_html.'&';
         $postFields .= 'get_perc_by='.                      $this->config['get_perc_by'].'&';
@@ -229,6 +229,7 @@ class AmazonApiMonitoring
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['displayReport'], $postFields);
         return $curl_out;
     }
+
     /**
      * Sending Curl
      * 
@@ -245,13 +246,24 @@ class AmazonApiMonitoring
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->config['curl_duration_time']);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         $server_output = curl_exec ($ch);
         $info = curl_getinfo($ch);
+        $curl_errno = curl_errno($ch);
+        $curl_error = curl_error($ch);
         curl_close ($ch);
 
+        if($curl_errno > 0)
+        {
+            return [
+                'code'    => 0,
+                'message' => $curl_error
+            ];
+        }
         if($info['http_code'] && $info['http_code']  >= 400 )
         {
             $errorMessage = $server_output.' {{{|}}} ';
@@ -355,6 +367,20 @@ class AmazonApiMonitoring
         $message = '['.date('Y-m-d H:i:s').'] Test.ERROR'.PHP_EOL;
         $message .= PHP_EOL;
         $message .= $this->message;
+        
         Helper::safefilerewrite($this->config['wornings_log_path'], $message,'a+');
+
+        $to      = $this->config['to_email'];
+        $subject = $this->config['monitor_email_subjct'];
+        $headers = 'From: '. $this->config['from_email'];
+
+        if(!mail( $to, $subject, $message, $headers ) ){
+            $mail = new Logger('E-Mail');
+            $mail->pushHandler(new StreamHandler($logPath, Logger::WARNING));
+
+            // add records to the log
+            $mail->warning(error_get_last());
+            echo 'E-mail not sent :'.error_get_last().PHP_EOL;
+        }
     }
 }
