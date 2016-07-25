@@ -1,9 +1,7 @@
 <?php
-    
+
 return [
-    'url'                   => 'https://www.google.com',
     'domain'                => 'www.google.com',
-    'init_url'              => 'google.com',
     'key'                   => 'AKIAIL4CY74GOZXWZWLQ',
     'secret'                => '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',
     'to_email'              => 'admin@test.com',
@@ -12,7 +10,7 @@ return [
     'protocol'              => 'http',
     'create_config_file'    => true,
     'duration'              => 2*60,//seconds
-    'curl_duration_time'    => 5,//seconds
+    'curl_duration_time'    => 2*60,//seconds
     'speed_origine'         => 1.45,
     'speed'                 => 1.3,
     'random_faster'         => 12,
@@ -39,8 +37,8 @@ return [
         'getSpeed'            => 'http://deploy.aiscaler.com/getspeed',
         'getInstance'         => 'http://deploy.aiscaler.com/getinstance',
         'getSpeedByLocation'  => 'http://deploy.aiscaler.com/getspeedbylocation',
-        'getSpeedDetails'     =>'http://deploy.aiscaler.com/getspeeddetails',
-        'displayReport'       =>'http://deploy.aiscaler.com/displayreport'
+        'getSpeedDetails'     => 'http://deploy.aiscaler.com/getspeeddetails',
+        'displayReport'       => 'http://deploy.aiscaler.com/displayreport'
     ],
     'regions'=>[
         'us-east-1',

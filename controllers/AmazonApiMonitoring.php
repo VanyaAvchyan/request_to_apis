@@ -86,7 +86,7 @@ class AmazonApiMonitoring
      */
     private function getUrl()
     {
-        $postFields  = 'url='.$this->config['url'];
+        $postFields  = 'url=https://'.$this->config['domain'];
         $curl_out = $this->curlPostRequst( $this->config['live_actions']['getUrl'], $postFields);
         return $curl_out;
     }
@@ -99,7 +99,7 @@ class AmazonApiMonitoring
     private function createInstance()
     {
         $postFields  = 'region_code='.$this->config['region_code'].'&';
-        $postFields .= 'init_url='.$this->config['init_url'].'&';
+        $postFields .= 'init_url=https://'.$this->config['domain'].'&';
         $postFields .= 'url='.$this->config['domain'].'&';
         $postFields .= 'create_config_file='.$this->config['create_config_file'];
         $curl_out = $this->curlPostRequst($this->config['live_actions']['createInstance'], $postFields);
@@ -114,7 +114,7 @@ class AmazonApiMonitoring
     {
         $postFields  = 'website='.((!$public_dns)?$this->config['domain']:$public_dns).'&';
         $postFields .= 'region_code=origine_website&';
-        $postFields .= 'init_url='.$this->config['init_url'].'&';
+        $postFields .= 'init_url=https://'.$this->config['domain'].'&';
         $postFields .= 'url='.$this->config['domain'].'&';
         $postFields .= 'public_dns='.((!$public_dns)?'':$public_dns);
         $url = $this->config['live_actions']['getSpeed'];
@@ -129,12 +129,12 @@ class AmazonApiMonitoring
      */
     private function getInstance($instanceId)
     {
-        $postFields  = 'region_code='.   $this->config['region_code'].'&';
-        $postFields .= 'instanceId='.    $instanceId.'&';
-        $postFields .= 'init_url='.      $this->config['init_url'].'&';
-        $postFields .= 'url='.           $this->config['domain'].'&';
-        $postFields .= 'protocol='.      $this->config['protocol'].'&';
-        $postFields .= 'instance_count='.$this->config['instance_count'];
+        $postFields  = 'region_code='.      $this->config['region_code'].'&';
+        $postFields .= 'instanceId='.       $instanceId.'&';
+        $postFields .= 'init_url=https://'. $this->config['domain'].'&';
+        $postFields .= 'url='.              $this->config['domain'].'&';
+        $postFields .= 'protocol='.         $this->config['protocol'].'&';
+        $postFields .= 'instance_count='.   $this->config['instance_count'];
         $curl_out   = $this->curlPostRequst($this->config['live_actions']['getInstance'], $postFields);
         return $curl_out;
     }
